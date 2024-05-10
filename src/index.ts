@@ -36,6 +36,7 @@ app.get("/coins/:id", async (req, res) => {
 
 app.post("/coins", async (req, res) => {
   const {
+
     creator,
     decimals,
     name,
@@ -69,6 +70,7 @@ app.post("/coins", async (req, res) => {
       data: {
         // TODO below should come from Sui deploy
         objectId: Math.random().toString(36).substring(7),
+        treasuryCapId: Math.random().toString(36).substring(7),
         creator,
         decimals,
         name,
