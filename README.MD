@@ -2,6 +2,7 @@
 # First time setup
 1. `pnpm i`
 2. `git submodule update --init`
+3. `npx prisma migrate`
 2. `npx prisma generate`
 
 # Continuing setup
