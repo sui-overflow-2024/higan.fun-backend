@@ -1,11 +1,12 @@
 import handlebars from 'handlebars';
 
 export const tokenTemplate = handlebars.compile(`
-module we_hate_the_ui_contracts::{{token_snake_case}} {
+module we_hate_the_ui_contracts::{{name_snake_case}} {
     use std::option;
     use sui::coin::{Self, Coin, TreasuryCap};
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
+    use sui::url;
 
     /// Name of the coin. By convention, this type has the same name as its parent module
     /// and has no fields. The full type of the coin defined by this module will be COIN<{{token_sname_case_caps}}>.
@@ -17,7 +18,7 @@ module we_hate_the_ui_contracts::{{token_snake_case}} {
     /// registered once.
     fun init(witness: {{name_snake_case_caps}}, ctx: &mut TxContext) {
         // Get a treasury cap for the coin and give it to the transaction sender
-        let (treasury_cap, metadata) = coin::create_currency<{{name_snake_case_caps}}>(witness, {{decimals}}, b"{{name_snake_case_caps}}", b"{{symbol}}", b"{{description}}", b"{{icon_url}}", ctx);
+        let (treasury_cap, metadata) = coin::create_currency<{{name_snake_case_caps}}>(witness, {{decimals}}, b"{{name_snake_case_caps}}", b"{{symbol}}", b"{{description}}", option::some(url::new_unsafe_from_bytes(b"{{icon_url}}")), ctx);
         transfer::public_freeze_object(metadata);
         transfer::public_transfer(treasury_cap, tx_context::sender(ctx))
     }
@@ -40,3 +41,17 @@ module we_hate_the_ui_contracts::{{token_snake_case}} {
         transfer::public_transfer(treasury_cap, target);
     }
 }`)
+
+export const moveTomlTemplate = handlebars.compile(`
+[package]
+name = "we_hate_the_ui_contracts"
+edition = "2024.beta" # edition = "legacy" to use legacy (pre-2024) Move
+# license = ""           # e.g., "MIT", "GPL", "Apache 2.0"
+# authors = ["..."]      # e.g., ["Joe Smith (joesmith@noemail.com)", "John Snow (johnsnow@noemail.com)"]
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "devnet" }
+
+[addresses]
+we_hate_the_ui_contracts = "0x0"
+`)
