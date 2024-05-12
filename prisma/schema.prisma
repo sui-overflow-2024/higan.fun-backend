@@ -9,18 +9,20 @@ datasource db {
 }
 
 model Coin {
-  objectId      String   @id
-  treasuryCapId String
+  packageId     String   @id
+  module        String
+  storeId       String
   creator       String
   decimals      Int
   name          String
   symbol        String
   description   String
   iconUrl       String
-  website       String
-  twitterUrl    String
-  discordUrl    String
-  telegramUrl   String
+  website       String   @default("")
+  twitterUrl    String   @default("")
+  discordUrl    String   @default("")
+  telegramUrl   String   @default("")
+  whitepaperUrl String   @default("")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
