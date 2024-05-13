@@ -1,6 +1,10 @@
 generator client {
   provider = "prisma-client-js"
 }
+generator frontend_client {
+  provider = "prisma-client-js"
+  output = "../../we-hate-the-ui/lib/prisma/client"
+}
 
 // TODO Switch to postgres before launch
 datasource db {
