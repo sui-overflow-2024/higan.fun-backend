@@ -20,8 +20,9 @@ model Coin {
   decimals      Int
   name          String
   symbol        String
-  description   String
-  iconUrl       String
+  description   String @default("")
+  iconUrl       String  @default("")
+  coinType      String
   website       String   @default("")
   twitterUrl    String   @default("")
   discordUrl    String   @default("")
