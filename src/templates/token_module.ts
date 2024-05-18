@@ -1,24 +1,26 @@
 import handlebars from 'handlebars';
 
 export const tokenTemplate =
-  handlebars.compile(`/// Example custom coin. The backend uses this as a template
+  handlebars.compile(`
 #[allow(duplicate_alias)]
 module we_hate_the_ui_contracts::{{name_snake_case}} {
     use std::option;
-    use sui::coin::{Self, Coin, TreasuryCap, CoinMetadata};
+    use sui::coin::{Self, Coin, TreasuryCap};
     use sui::transfer;
-    use sui::tx_context::{Self, sender, TxContext};
-    use sui::token::{Self, Token, ActionRequest}; // See here for the difference between coin and token: https://docs.sui.io/standards/closed-loop-token/coin-token-comparison
+    use sui::tx_context::{sender, TxContext};
     use sui::object::{Self, UID};
     use sui::balance::{Self, Balance};
     use sui::sui::SUI;
     use std::string::{Self, String};
     use std::debug;
-    use sui::math;
+    // use sui::math;
 
     const ENotEnoughSuiForCoinPurchase: u64 = 1;
+    #[allow(unused_const)]
     const POINT_ZERO_ONE_SUI: u64 = 10_000_000; //0.01 SUI
+    #[allow(unused_const)]
     const POINT_ONE_SUI: u64 = 100_000_000; //0.1 SUI
+    #[allow(unused_const)]
     const ONE_SUI: u64 = 1_000_000_000; //1 SUI
     const PRICE_INCREASE_PER_COIN: u64 = 1; // INCREASE PRICE BY ONE MIST PER COIN MINTED
     const INITIAL_COIN_PRICE: u64 = 1_000; // 0.000001 SUI
@@ -35,11 +37,11 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         id: UID
     }
 
-    public struct LinearBodingCurve has key, store {
-        id: UID,
-        total_supply: Balance<{{name_snake_case_caps}}>,
-        reserve_balance: Balance<SUI>,
-    }
+    // public struct LinearBondingCurve has key, store {
+    //     id: UID,
+    //     total_supply: Balance<{{name_snake_case_caps}}>,
+    //     reserve_balance: Balance<SUI>,
+    // }
 
     // #[allow(lint(coin_field))]
     public struct {{name_capital_camel_case}}Store has key {
@@ -47,6 +49,7 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         treasury: TreasuryCap<{{name_snake_case_caps}}>,
         // Later we should support dynamic metadata, but for now lets use fields
         creator: address,
+        publisher: address,
         discordUrl: String,
         twitterUrl: String,
         websiteUrl: String,
@@ -63,6 +66,7 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
             id: object::new(ctx),
             treasury: treasury_cap,
             creator: ctx.sender(),
+            publisher: ctx.sender(),
             discordUrl: string::utf8(b""),
             twitterUrl: string::utf8(b""),
             websiteUrl: string::utf8(b""),
@@ -71,6 +75,7 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         });
 
     }
+
 
     // Manager will eventually transfer the treasury cap to the creator
     public fun transfer_cap(treasury_cap: TreasuryCap<{{name_snake_case_caps}}>, target: address){
@@ -96,6 +101,8 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         coin::mint_and_transfer(&mut self.treasury, mintAmount, sender(ctx), ctx);
     }
 
+    //TODO Later remove the below and return coin for PTB
+    #[allow(lint(self_transfer))]
      public fun sell_coins(
         self: &mut {{name_capital_camel_case}}Store, payment: Coin<{{name_snake_case_caps}}>, ctx: &mut TxContext
     ){
@@ -105,6 +112,7 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         let returnSui = coin::take(&mut self.sui_coin_amount, burnAmount, ctx);
 
         coin::burn(&mut self.treasury, payment);
+
 
         transfer::public_transfer(returnSui, ctx.sender())
     }
@@ -159,7 +167,6 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
 
 
     #[test_only] use sui::test_scenario;
-
     #[test]
     fun test_buy_price() {
           // Initialize a mock sender address
@@ -210,7 +217,8 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         // Cleans up the scenario object
         scenario.end();
     }
-}`);
+}
+`);
 
 export const moveTomlTemplate = handlebars.compile(`
 [package]

@@ -12,17 +12,18 @@ import {Ed25519Keypair} from "@mysten/sui.js/keypairs/ed25519";
 import {toPascalCase, toSnakeCase, toSnakeCaseUpper} from "./lib";
 import cors from "cors";
 import { WebSocket } from 'ws';
+import {createPrivateKey} from "node:crypto";
 
 const keypair = Ed25519Keypair.deriveKeypair(
     process.env.TEST_MNEMONICS || process.env.PRIVATE_KEY_MNEMONIC || "", //different devs w/ different naming, converge on PRIVATE_KEY_MNEMONIC later
     "m/44'/784'/0'/0'/0'"
 );
 
-// const network = process.env.NETWORK || "localnet";
-const network = "mainnet"
-// if (network !== "localnet" && network !== "testnet" && network !== "mainnet" && network !== "devnet") {
-//     throw new Error(`Invalid network: ${network}. Please use localnet, testnet, mainnet, or devnet`);
-// }
+const network = process.env.NETWORK || "localnet";
+// const network = "mainnet"
+if (network !== "localnet" && network !== "testnet" && network !== "mainnet" && network !== "devnet") {
+    throw new Error(`Invalid network: ${network}. Please use localnet, testnet, mainnet, or devnet`);
+}
 const rpcUrl = getFullnodeUrl(network);
 console.log("Using network: ", network, " with RPC URL: ", rpcUrl);
 const client = new SuiClient({
@@ -94,6 +95,9 @@ app.post("/coins", async (req, res) => {
 
         // -- Load the token template and populate it with the token details using handlebars --
 
+        console.log("name", name)
+        console.log("sname", toSnakeCase(name))
+        console.log("snameupper", toSnakeCaseUpper(name))
         const templateData = {
             name_snake_case_caps: toSnakeCase(name).toUpperCase(),
             name_snake_case: toSnakeCase(name),
@@ -137,25 +141,25 @@ app.post("/coins", async (req, res) => {
         // console.log(compiledModulesAndDependencies);
 
         const tx = new TransactionBlock();
+        tx.setSenderIfNotSet(keypair.getPublicKey().toSuiAddress());
         const [upgradeCap] = tx.publish({
             modules: compiledModulesAndDependencies.modules,
             dependencies: compiledModulesAndDependencies.dependencies,
         });
 
-        // const [coinGas] = tx.splitCoins(tx.gas, [100]);
+        const [coinGas] = tx.splitCoins(tx.gas, [100000]);
 
-        // tx.transferObjects(
-        //   [coinGas],
-        //   tx.pure(keypair.getPublicKey().toSuiAddress())
-        // );
+        tx.transferObjects(
+          [coinGas],
+          tx.pure(keypair.getPublicKey().toSuiAddress())
+        );
 
         tx.transferObjects(
             [upgradeCap],
             tx.pure(keypair.getPublicKey().toSuiAddress())
         );
 
-        //TODO after publishing, update the metadata of the coin store w/ the discord, twitterUrl, etc. Don't set creator in this function
-        // TODO Pass the signature (signature isn't being passed yet) to the contract to set the creator (and burn the OTW)
+        console.log("signerAddress: " + keypair.toSuiAddress())
         let response = await client.signAndExecuteTransactionBlock({
             signer: keypair,
             transactionBlock: tx,
@@ -276,32 +280,36 @@ app.put("/coins/:id", async (req, res) => {
 //     }),
 // );
 
-const startListener = async () => {
-    let unsubscribe = await client.subscribeEvent({
-        filter: { Package: "0xa0eba10b173538c8fecca1dff298e488402cc9ff374f8a12ca7758eebe830b66" },
-        // filter: {  },
-        onMessage: (event) => {
 
-            console.log('subscribeEvent', JSON.stringify(event, null, 2));
-        },
-    });
-
-    process.on('SIGINT', async () => {
-        console.log('Interrupted...');
-        if (unsubscribe) {
-            await unsubscribe();
-            //@ts-ignore-next-line
-            unsubscribe = undefined;
-        }
-    });
-}
-
-
-startListener()
-
-
-const server = app.listen(process.env.PORT || 3004, () =>
+const server = app.listen(process.env.PORT || 3005, () =>
     console.log(`
-🚀 Server ready at: http://127.0.0.1:${process.env.PORT || 3004}
+🚀 Server ready at: http://127.0.0.1:${process.env.PORT || 3005}
 `)
 );
+
+
+// const startListener = async () => {
+//     let unsubscribe = await client.subscribeEvent({
+//         filter: { Package: "0xa0eba10b173538c8fecca1dff298e488402cc9ff374f8a12ca7758eebe830b66" },
+//         // filter: {  },
+//         onMessage: (event) => {
+//
+//             console.log('subscribeEvent', JSON.stringify(event, null, 2));
+//         },
+//     });
+//
+//     process.on('SIGINT', async () => {
+//         console.log('Interrupted...');
+//         if (unsubscribe) {
+//             await unsubscribe();
+//             server.close()
+//             //@ts-ignore-next-line
+//             unsubscribe = undefined;
+//         }
+//     });
+// }
+
+
+// startListener()
+
+
