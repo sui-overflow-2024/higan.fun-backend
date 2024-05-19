@@ -20,7 +20,6 @@ const keypair = Ed25519Keypair.deriveKeypair(
 );
 
 const network = process.env.NETWORK || "localnet";
-// const network = "mainnet"
 if (network !== "localnet" && network !== "testnet" && network !== "mainnet" && network !== "devnet") {
     throw new Error(`Invalid network: ${network}. Please use localnet, testnet, mainnet, or devnet`);
 }
@@ -28,7 +27,7 @@ const rpcUrl = getFullnodeUrl(network);
 console.log("Using network: ", network, " with RPC URL: ", rpcUrl);
 const client = new SuiClient({
     transport: new SuiHTTPTransport({
-        url: getFullnodeUrl('mainnet'),
+        url: rpcUrl,
         // The typescript definitions may not match perfectly, casting to never avoids these minor incompatibilities
         WebSocketConstructor: WebSocket as never,
     }),
@@ -39,15 +38,47 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Type guard to check if an array consists only of strings
+function isStringArray(arr: any[]): arr is string[] {
+    return arr.every(item => typeof item === 'string');
+}
+
 app.get("/coins", async (req, res) => {
     try {
-        const coins = await prisma.coin.findMany();
+        let packageIds: string[] = [];
+        let packageIdsRaw = req.query.packageIds;
+
+        if (typeof packageIdsRaw === "string") {
+            packageIds = [packageIdsRaw];
+        } else if (Array.isArray(packageIdsRaw) && isStringArray(packageIdsRaw)) {
+            packageIds = packageIdsRaw;
+        }
+
+        let coins;
+        if (packageIds && Array.isArray(packageIds) && packageIds.length) {
+            coins = await prisma.coin.findMany({
+                where: {
+                    packageId: {
+                        in: packageIds
+                    }
+                },
+                select: {
+                    packageId: true
+                }, orderBy: {
+                    packageId: "asc"
+                }
+            });
+        } else {
+            coins = await prisma.coin.findMany();
+        }
+
         res.json(coins);
     } catch (error) {
         console.error(error);
-        res.status(500).json({error: "Internal server error"});
+        res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 app.get("/coins/:id", async (req, res) => {
     const {id} = req.params;
