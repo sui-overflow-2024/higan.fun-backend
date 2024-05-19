@@ -10,10 +10,9 @@ import {TransactionBlock} from "@mysten/sui.js/transactions";
 import {getFullnodeUrl, SuiClient, SuiHTTPTransport} from "@mysten/sui.js/client";
 import {Ed25519Keypair} from "@mysten/sui.js/keypairs/ed25519";
 import {toPascalCase, toSnakeCase, toSnakeCaseUpper} from "./lib";
+import type {Unsubscribe} from "@mysten/sui.js/client";
 import cors from "cors";
-import { WebSocket } from 'ws';
-import {createPrivateKey} from "node:crypto";
-import { start } from "repl";
+import {WebSocket} from 'ws';
 
 const keypair = Ed25519Keypair.deriveKeypair(
     process.env.TEST_MNEMONICS || process.env.PRIVATE_KEY_MNEMONIC || "", //different devs w/ different naming, converge on PRIVATE_KEY_MNEMONIC later
@@ -76,7 +75,7 @@ app.get("/coins", async (req, res) => {
         res.json(coins);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({error: "Internal server error"});
     }
 });
 
@@ -182,8 +181,8 @@ app.post("/coins", async (req, res) => {
         const [coinGas] = tx.splitCoins(tx.gas, [100000]);
 
         tx.transferObjects(
-          [coinGas],
-          tx.pure(keypair.getPublicKey().toSuiAddress())
+            [coinGas],
+            tx.pure(keypair.getPublicKey().toSuiAddress())
         );
 
         tx.transferObjects(
@@ -319,26 +318,28 @@ const server = app.listen(process.env.PORT || 3005, () =>
 
 const COIN_SOCIALS_UPDATED_EVENT = 'CoinSocialsUpdatedEvent'
 
-let globalCoins = [];
+let globalCoins: {packageId: string}[] = [];
 
+let unsubscribe: Unsubscribe
 const startListener = async () => {
-    const globalCoins = await prisma.coin.findMany({
+    globalCoins = await prisma.coin.findMany({
         select: {
             packageId: true
-          },
+        },
         orderBy: {
             packageId: 'asc'
         }
-      });
+    });
     let packagesIds = globalCoins.map(({packageId}) => {
-        return { Package: packageId };
+        return {Package: packageId};
     });
 
-    console.log("listener for events on this package ids ", packagesIds)
+    console.log(`${new Date().toLocaleString()} listener for events on this package ids `, packagesIds)
 
-    let unsubscribe = await client.subscribeEvent({
+    unsubscribe = await client.subscribeEvent({
         // should use filter: { All: packageIds }
-        filter: { Package: "0xf44761a7443e37c6cba68cd6c8b4048cddcda4f6c5d1c883b1e71bb06a64661" },
+        // filter: {Package: "0xf44761a7443e37c6cba68cd6c8b4048cddcda4f6c5d1c883b1e71bb06a64661"},
+        filter: {All: packagesIds},
         // filter: { Package: "0xf44761a7443e37c6cba68cd6c8b4048cddcda4f6c5d1c883b1e71bb06a64661b::volo_derelinquo_eveniet::VOLO_DERELINQUO_EVENIET" },
         onMessage: async (event: any) => {
             let eventType = event.type.split('::').slice(-1);
@@ -348,52 +349,25 @@ const startListener = async () => {
             console.log('subscribeEvent', JSON.stringify(event, null, 2));
 
             if (event.type == COIN_SOCIALS_UPDATED_EVENT) {
-              let { discord_url, twitter_url, website_url, telegram_url }  = event.parsedJson;
+                let {discord_url, twitter_url, website_url, telegram_url} = event.parsedJson;
 
-              const coin = await prisma.coin.update({
-                where: { packageId: packageId },
-                data: {
-                  discordUrl: discord_url,
-                  twitterUrl: twitter_url,
-                  website: website_url,
-                  telegramUrl: telegram_url,
-                },
-              });
-          }
+                const coin = await prisma.coin.update({
+                    where: {packageId: packageId},
+                    data: {
+                        discordUrl: discord_url,
+                        twitterUrl: twitter_url,
+                        website: website_url,
+                        telegramUrl: telegram_url,
+                    },
+                });
+            }
         },
     });
 
     // Query the DB for coins, only return the packageId
     // Compare the DB collection to the current collection of coins
     // If changed, restart the event listener with a filter containing the updated list of coins.
-    setInterval(async () => {
-    try {
-      const coins = await prisma.coin.findMany({
-        select: {
-            packageId: true
-          },
-        orderBy: {
-            packageId: 'asc'
-        }
-      });
-    //   update
-    if (globalCoins.length != coins.length) {
-        // needs refresh
-        await unsubscribe();
-    } else {
-        for (let i = 0; i < coins.length; i++) {
-            if (globalCoins[i] !== coins[i]) {
-                await unsubscribe();
-                break;
-            }
-        }
-    }
 
-    } catch (error) {
-        await unsubscribe();
-        console.error('Failed to fetch coins:', error);
-    }
-  }, 5000);
 
     process.on('SIGINT', async () => {
         console.log('Interrupted...');
@@ -404,9 +378,49 @@ const startListener = async () => {
             unsubscribe = undefined;
         }
     });
+    return unsubscribe;
 }
+startListener()
 
-startListener();
+
+setInterval(async () => {
+    try {
+        let needsRefresh = false;
+        const coins = await prisma.coin.findMany({
+            select: {
+                packageId: true
+            },
+            orderBy: {
+                packageId: 'asc'
+            }
+        });
+        //   update
+        if (globalCoins.length != coins.length) {
+            // needs refresh
+            console.log("globalCoins.length != coins.length", globalCoins.length, coins.length)
+            needsRefresh = true;
+        } else {
+            for (let i = 0; i < coins.length; i++) {
+                if (globalCoins[i].packageId !== coins[i].packageId) {
+                    console.log("globalCoins[i] !== coins[i]", globalCoins[i], coins[i])
+                    needsRefresh = true;
+                    break;
+                }
+            }
+        }
+        if (needsRefresh) {
+            console.log("Refreshing listener on coins")
+            await unsubscribe();
+            unsubscribe = await startListener();
+        }
+    } catch (error) {
+
+        console.log("Refreshing listener on coins failed", error)
+        await unsubscribe();
+        unsubscribe = await startListener();
+        console.error('Failed to fetch coins:', error);
+    }
+}, 5000);
 
 
 // RELOAD listener when a coin is created
