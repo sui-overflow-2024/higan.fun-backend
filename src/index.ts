@@ -43,8 +43,25 @@ function isStringArray(arr: any[]): arr is string[] {
     return arr.every(item => typeof item === 'string');
 }
 
+app.get("/top_coins", async (req, res) => {
+    // TODO: hottest coin & Imminent
+    let newest = await prisma.coin.findFirst({
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+    res.json({
+        newest,
+        hottest: newest,
+        imminent: newest,
+    })
+});
+
 app.get("/coins", async (req, res) => {
     try {
+        res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+
         let packageIds: string[] = [];
         let packageIdsRaw = req.query.packageIds;
 
@@ -79,6 +96,60 @@ app.get("/coins", async (req, res) => {
     }
 });
 
+app.get("/coins/search", async (req, res) => {
+    // TODO: fix later
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+    let sortBy = 'createdAt';
+    let order = req.query.order as string;
+    let sort = req.query.sort;
+    let term = req.query.term as string;
+    let whereClause;
+
+    if (term) {
+        whereClause = {
+            OR: [
+              {
+                name: {
+                  contains: term,
+                //   mode: 'sensitive',
+                },
+              },
+              {
+                symbol: {
+                  startsWith: term,
+                  // mode: 'insensitive',
+                },
+              },
+            ],
+        };
+    }
+
+    // TODO: implement other filters
+    // "created" | "marketCap" | "tvl" | "price"
+    if (sort === 'marketCap') {
+        // implement sortBy=
+    }
+
+    // set order to default if invalid value
+    if (!["asc", "desc"].includes(order)) {
+        order = "desc";
+    }
+
+    try {
+        let coins = await prisma.coin.findMany({
+            where: whereClause,
+            orderBy: {
+                [sortBy]: order
+            }
+        });
+
+        res.json(coins);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 app.get("/coins/:id", async (req, res) => {
     const {id} = req.params;
