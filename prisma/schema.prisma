@@ -28,6 +28,20 @@ model Coin {
   discordUrl    String   @default("")
   telegramUrl   String   @default("")
   whitepaperUrl String   @default("")
+  trades        Trade[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model Trade {
+  id             Int      @id @default(autoincrement())
+  suiAmount      BigInt
+  coinAmount     BigInt
+  isBuy          Boolean
+  account        String
+  coinId         String
+  coin           Coin     @relation(fields: [coinId], references: [packageId])
+  transactionId  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

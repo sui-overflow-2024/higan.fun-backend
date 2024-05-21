@@ -168,6 +168,28 @@ app.get("/coins/:id", async (req, res) => {
     }
 });
 
+app.get('/coins/:id/trades', async (req, res) => {
+    const {id} = req.params;
+    try {
+        // TODO: apply a limit ?
+        const trades = await prisma.trade.findMany({
+            where: {coinId: id},
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+        const tradesJson = JSON.stringify(trades, (_, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+        );
+
+        res.json(JSON.parse(tradesJson))
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "Internal server error"});
+    }
+});
+
 app.post("/coins", async (req, res) => {
     const {
         creator,
@@ -388,6 +410,7 @@ const server = app.listen(process.env.PORT || 3005, () =>
 );
 
 const COIN_SOCIALS_UPDATED_EVENT = 'CoinSocialsUpdatedEvent'
+const SWAP_EVENT = 'SwapEvent'
 
 let globalCoins: {packageId: string}[] = [];
 
@@ -408,18 +431,17 @@ const startListener = async () => {
     console.log(`${new Date().toLocaleString()} listener for events on this package ids `, packagesIds)
 
     unsubscribe = await client.subscribeEvent({
-        // should use filter: { All: packageIds }
-        // filter: {Package: "0xf44761a7443e37c6cba68cd6c8b4048cddcda4f6c5d1c883b1e71bb06a64661"},
-        filter: {All: packagesIds},
-        // filter: { Package: "0xf44761a7443e37c6cba68cd6c8b4048cddcda4f6c5d1c883b1e71bb06a64661b::volo_derelinquo_eveniet::VOLO_DERELINQUO_EVENIET" },
+        // filter: {Package: "0xb96d1556fa6a9f42ac8027b3acd7818691bcc08488dab542678b908dfc80f88f"},
+        filter: {Any: packagesIds},
         onMessage: async (event: any) => {
-            let eventType = event.type.split('::').slice(-1);
+            let eventType = event.type.split('::').at(-1);
             let packageId = event.packageId;
+            let txDigest = event.id.txDigest;
 
             console.log(eventType);
             console.log('subscribeEvent', JSON.stringify(event, null, 2));
 
-            if (event.type == COIN_SOCIALS_UPDATED_EVENT) {
+            if (eventType == COIN_SOCIALS_UPDATED_EVENT) {
                 let {discord_url, twitter_url, website_url, telegram_url} = event.parsedJson;
 
                 const coin = await prisma.coin.update({
@@ -431,6 +453,21 @@ const startListener = async () => {
                         telegramUrl: telegram_url,
                     },
                 });
+            } else if (eventType === SWAP_EVENT) {
+                let {is_buy, sui_amount, coin_amount, account} = event.parsedJson;
+                console.log(event.parsedJson)
+                console.log(is_buy, "isBuy");
+
+                await prisma.trade.create({
+                    data: {
+                        suiAmount: parseInt(sui_amount),
+                        coinAmount: parseInt(coin_amount),
+                        account: account,
+                        coinId: packageId,
+                        transactionId: txDigest,
+                        isBuy: is_buy
+                    }
+                })
             }
         },
     });

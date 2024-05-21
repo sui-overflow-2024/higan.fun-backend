@@ -1,0 +1,12 @@
+-- CreateTable
+CREATE TABLE "Trade" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "inputAmount" INTEGER NOT NULL,
+    "outputAmount" INTEGER NOT NULL,
+    "is_buy" BOOLEAN NOT NULL,
+    "sender" TEXT NOT NULL,
+    "coinId" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Trade_coinId_fkey" FOREIGN KEY ("coinId") REFERENCES "Coin" ("packageId") ON DELETE RESTRICT ON UPDATE CASCADE
+);
