@@ -74,7 +74,9 @@ model Post {
   coinId   String
   suiAddress String @default("")
   text     String
+  // text     String @db.VarChar(1000)
   likes    Int    @default(0)
   // author   User   @relation(fields: [authorId], references: [id])
   coin     Coin   @relation(fields: [coinId], references: [packageId])
+  createdAt DateTime @default(now())
 }
