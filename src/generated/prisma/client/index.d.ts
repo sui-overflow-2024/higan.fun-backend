@@ -3234,25 +3234,28 @@ export namespace Prisma {
   export type PostMinAggregateOutputType = {
     id: bigint | null
     coinId: string | null
-    suiAddress: string | null
+    authorId: string | null
     text: string | null
     likes: number | null
+    createdAt: Date | null
   }
 
   export type PostMaxAggregateOutputType = {
     id: bigint | null
     coinId: string | null
-    suiAddress: string | null
+    authorId: string | null
     text: string | null
     likes: number | null
+    createdAt: Date | null
   }
 
   export type PostCountAggregateOutputType = {
     id: number
     coinId: number
-    suiAddress: number
+    authorId: number
     text: number
     likes: number
+    createdAt: number
     _all: number
   }
 
@@ -3270,25 +3273,28 @@ export namespace Prisma {
   export type PostMinAggregateInputType = {
     id?: true
     coinId?: true
-    suiAddress?: true
+    authorId?: true
     text?: true
     likes?: true
+    createdAt?: true
   }
 
   export type PostMaxAggregateInputType = {
     id?: true
     coinId?: true
-    suiAddress?: true
+    authorId?: true
     text?: true
     likes?: true
+    createdAt?: true
   }
 
   export type PostCountAggregateInputType = {
     id?: true
     coinId?: true
-    suiAddress?: true
+    authorId?: true
     text?: true
     likes?: true
+    createdAt?: true
     _all?: true
   }
 
@@ -3381,9 +3387,10 @@ export namespace Prisma {
   export type PostGroupByOutputType = {
     id: bigint
     coinId: string
-    suiAddress: string
+    authorId: string
     text: string
     likes: number
+    createdAt: Date
     _count: PostCountAggregateOutputType | null
     _avg: PostAvgAggregateOutputType | null
     _sum: PostSumAggregateOutputType | null
@@ -3408,18 +3415,20 @@ export namespace Prisma {
   export type PostSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     coinId?: boolean
-    suiAddress?: boolean
+    authorId?: boolean
     text?: boolean
     likes?: boolean
+    createdAt?: boolean
     coin?: boolean | CoinDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["post"]>
 
   export type PostSelectScalar = {
     id?: boolean
     coinId?: boolean
-    suiAddress?: boolean
+    authorId?: boolean
     text?: boolean
     likes?: boolean
+    createdAt?: boolean
   }
 
 
@@ -3436,9 +3445,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: bigint
       coinId: string
-      suiAddress: string
+      authorId: string
       text: string
       likes: number
+      createdAt: Date
     }, ExtArgs["result"]["post"]>
     composites: {}
   }
@@ -3836,9 +3846,10 @@ export namespace Prisma {
   interface PostFieldRefs {
     readonly id: FieldRef<"Post", 'BigInt'>
     readonly coinId: FieldRef<"Post", 'String'>
-    readonly suiAddress: FieldRef<"Post", 'String'>
+    readonly authorId: FieldRef<"Post", 'String'>
     readonly text: FieldRef<"Post", 'String'>
     readonly likes: FieldRef<"Post", 'Int'>
+    readonly createdAt: FieldRef<"Post", 'DateTime'>
   }
     
 
@@ -4205,9 +4216,10 @@ export namespace Prisma {
   export const PostScalarFieldEnum: {
     id: 'id',
     coinId: 'coinId',
-    suiAddress: 'suiAddress',
+    authorId: 'authorId',
     text: 'text',
-    likes: 'likes'
+    likes: 'likes',
+    createdAt: 'createdAt'
   };
 
   export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
@@ -4484,18 +4496,20 @@ export namespace Prisma {
     NOT?: PostWhereInput | PostWhereInput[]
     id?: BigIntFilter<"Post"> | bigint | number
     coinId?: StringFilter<"Post"> | string
-    suiAddress?: StringFilter<"Post"> | string
+    authorId?: StringFilter<"Post"> | string
     text?: StringFilter<"Post"> | string
     likes?: IntFilter<"Post"> | number
+    createdAt?: DateTimeFilter<"Post"> | Date | string
     coin?: XOR<CoinRelationFilter, CoinWhereInput>
   }
 
   export type PostOrderByWithRelationInput = {
     id?: SortOrder
     coinId?: SortOrder
-    suiAddress?: SortOrder
+    authorId?: SortOrder
     text?: SortOrder
     likes?: SortOrder
+    createdAt?: SortOrder
     coin?: CoinOrderByWithRelationInput
   }
 
@@ -4505,18 +4519,20 @@ export namespace Prisma {
     OR?: PostWhereInput[]
     NOT?: PostWhereInput | PostWhereInput[]
     coinId?: StringFilter<"Post"> | string
-    suiAddress?: StringFilter<"Post"> | string
+    authorId?: StringFilter<"Post"> | string
     text?: StringFilter<"Post"> | string
     likes?: IntFilter<"Post"> | number
+    createdAt?: DateTimeFilter<"Post"> | Date | string
     coin?: XOR<CoinRelationFilter, CoinWhereInput>
   }, "id">
 
   export type PostOrderByWithAggregationInput = {
     id?: SortOrder
     coinId?: SortOrder
-    suiAddress?: SortOrder
+    authorId?: SortOrder
     text?: SortOrder
     likes?: SortOrder
+    createdAt?: SortOrder
     _count?: PostCountOrderByAggregateInput
     _avg?: PostAvgOrderByAggregateInput
     _max?: PostMaxOrderByAggregateInput
@@ -4530,9 +4546,10 @@ export namespace Prisma {
     NOT?: PostScalarWhereWithAggregatesInput | PostScalarWhereWithAggregatesInput[]
     id?: BigIntWithAggregatesFilter<"Post"> | bigint | number
     coinId?: StringWithAggregatesFilter<"Post"> | string
-    suiAddress?: StringWithAggregatesFilter<"Post"> | string
+    authorId?: StringWithAggregatesFilter<"Post"> | string
     text?: StringWithAggregatesFilter<"Post"> | string
     likes?: IntWithAggregatesFilter<"Post"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"Post"> | Date | string
   }
 
   export type CoinCreateInput = {
@@ -4779,57 +4796,64 @@ export namespace Prisma {
 
   export type PostCreateInput = {
     id?: bigint | number
-    suiAddress?: string
+    authorId?: string
     text: string
     likes?: number
+    createdAt?: Date | string
     coin: CoinCreateNestedOneWithoutPostsInput
   }
 
   export type PostUncheckedCreateInput = {
     id?: bigint | number
     coinId: string
-    suiAddress?: string
+    authorId?: string
     text: string
     likes?: number
+    createdAt?: Date | string
   }
 
   export type PostUpdateInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
-    suiAddress?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     coin?: CoinUpdateOneRequiredWithoutPostsNestedInput
   }
 
   export type PostUncheckedUpdateInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
     coinId?: StringFieldUpdateOperationsInput | string
-    suiAddress?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PostCreateManyInput = {
     id?: bigint | number
     coinId: string
-    suiAddress?: string
+    authorId?: string
     text: string
     likes?: number
+    createdAt?: Date | string
   }
 
   export type PostUpdateManyMutationInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
-    suiAddress?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PostUncheckedUpdateManyInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
     coinId?: StringFieldUpdateOperationsInput | string
-    suiAddress?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -5107,9 +5131,10 @@ export namespace Prisma {
   export type PostCountOrderByAggregateInput = {
     id?: SortOrder
     coinId?: SortOrder
-    suiAddress?: SortOrder
+    authorId?: SortOrder
     text?: SortOrder
     likes?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type PostAvgOrderByAggregateInput = {
@@ -5120,17 +5145,19 @@ export namespace Prisma {
   export type PostMaxOrderByAggregateInput = {
     id?: SortOrder
     coinId?: SortOrder
-    suiAddress?: SortOrder
+    authorId?: SortOrder
     text?: SortOrder
     likes?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type PostMinOrderByAggregateInput = {
     id?: SortOrder
     coinId?: SortOrder
-    suiAddress?: SortOrder
+    authorId?: SortOrder
     text?: SortOrder
     likes?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type PostSumOrderByAggregateInput = {
@@ -5444,16 +5471,18 @@ export namespace Prisma {
 
   export type PostCreateWithoutCoinInput = {
     id?: bigint | number
-    suiAddress?: string
+    authorId?: string
     text: string
     likes?: number
+    createdAt?: Date | string
   }
 
   export type PostUncheckedCreateWithoutCoinInput = {
     id?: bigint | number
-    suiAddress?: string
+    authorId?: string
     text: string
     likes?: number
+    createdAt?: Date | string
   }
 
   export type PostCreateOrConnectWithoutCoinInput = {
@@ -5518,9 +5547,10 @@ export namespace Prisma {
     NOT?: PostScalarWhereInput | PostScalarWhereInput[]
     id?: BigIntFilter<"Post"> | bigint | number
     coinId?: StringFilter<"Post"> | string
-    suiAddress?: StringFilter<"Post"> | string
+    authorId?: StringFilter<"Post"> | string
     text?: StringFilter<"Post"> | string
     likes?: IntFilter<"Post"> | number
+    createdAt?: DateTimeFilter<"Post"> | Date | string
   }
 
   export type CoinCreateWithoutTradesInput = {
@@ -5752,9 +5782,10 @@ export namespace Prisma {
 
   export type PostCreateManyCoinInput = {
     id?: bigint | number
-    suiAddress?: string
+    authorId?: string
     text: string
     likes?: number
+    createdAt?: Date | string
   }
 
   export type TradeUpdateWithoutCoinInput = {
@@ -5791,23 +5822,26 @@ export namespace Prisma {
 
   export type PostUpdateWithoutCoinInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
-    suiAddress?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PostUncheckedUpdateWithoutCoinInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
-    suiAddress?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PostUncheckedUpdateManyWithoutCoinInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
-    suiAddress?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

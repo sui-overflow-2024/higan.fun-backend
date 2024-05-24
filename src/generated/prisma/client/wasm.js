@@ -153,9 +153,10 @@ exports.Prisma.TradeScalarFieldEnum = {
 exports.Prisma.PostScalarFieldEnum = {
   id: 'id',
   coinId: 'coinId',
-  suiAddress: 'suiAddress',
+  authorId: 'authorId',
   text: 'text',
-  likes: 'likes'
+  likes: 'likes',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {

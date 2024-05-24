@@ -200,9 +200,6 @@ router.post("/coins", async (req, res) => {
 
         // -- Load the token template and populate it with the token details using handlebars --
 
-        console.log("name", name)
-        console.log("sname", toSnakeCase(name))
-        console.log("snameupper", toSnakeCaseUpper(name))
         const templateData = {
             name_snake_case_caps: toSnakeCase(name).toUpperCase(),
             name_snake_case: toSnakeCase(name),

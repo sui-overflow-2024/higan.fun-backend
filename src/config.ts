@@ -1,6 +1,6 @@
 import {WebSocket} from "ws";
-import {PrismaClient} from "@prisma/client";
 import {getFullnodeUrl, SuiClient, SuiHTTPTransport} from "@mysten/sui.js/client";
+import { PrismaClient } from "./generated/prisma/client";
 
 
 export const network = process.env.NETWORK || "localnet";

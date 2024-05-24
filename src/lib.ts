@@ -9,7 +9,6 @@ export const toPascalCase: (str: string) => string = (str) => {
 
 export const toSnakeCase: (str: string) => string = (str) =>{
     const res = str.replaceAll(" ", "_").toLowerCase()
-    console.log("ressname", res)
     return str.replaceAll(" ", "_").toLowerCase()
 }
 export const toSnakeCaseUpper: (str: string) => string = (str) =>{

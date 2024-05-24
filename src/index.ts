@@ -3,11 +3,13 @@ import type {Unsubscribe} from "@mysten/sui.js/client";
 import cors from "cors";
 import {client, prisma} from "./config";
 import coinRouter from "./routes/coins"
+import postRouter from "./routes/thread"
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(coinRouter)
+app.use(postRouter)
 
 const server = app.listen(process.env.PORT || 3005, () =>
     console.log(`
