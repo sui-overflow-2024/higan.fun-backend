@@ -30,6 +30,22 @@ router.get('/post/:id', async (req: Request<{ id: number }>, res: Response) => {
     res.json(thread);
 });
 
+router.get('/coin/:coinId/posts', async (req, res) => {
+    let { coinId } = req.params;
+
+    const threads = await prisma.post.findMany({
+        where: {
+            coinId: coinId,
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    }, );
+
+    res.json(threads);
+});
+
+
 // Create Thread
 // Every coin has a thread
 // model Post {

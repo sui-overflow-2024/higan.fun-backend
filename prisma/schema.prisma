@@ -70,7 +70,7 @@ model Trade {
 
 // Every coin has a thread
 model Post {
-  id       BigInt @id @default(autoincrement())
+  id       Int @id @default(autoincrement())
   coinId   String
   authorId String @default("")
   text     String
