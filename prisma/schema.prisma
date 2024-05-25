@@ -8,6 +8,13 @@ generator frontend_client {
   output   = "../../we-hate-the-ui/lib/prisma/client"
 }
 
+// enum CoinStatus {
+//   STARTING_UP
+//   OPEN
+//   CLOSE_PENDING
+//   CLOSED
+// }
+
 // generator typegraphql {
 //   provider = "typegraphql-prisma"
 // }
@@ -35,6 +42,8 @@ model Coin {
   telegramUrl   String   @default("")
   whitepaperUrl String   @default("")
   likes         Int      @default(0)
+  target        Int @default(0)
+  status        Int @default(0) //TODO this should be an enum type when we swap to postgres or mongo connector. Enum commented above
   trades        Trade[]
   // creatorUser   User     @relation(fields: [creator], references: [id])
   createdAt     DateTime @default(now())

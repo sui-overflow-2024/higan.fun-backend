@@ -133,6 +133,8 @@ exports.Prisma.CoinScalarFieldEnum = {
   telegramUrl: 'telegramUrl',
   whitepaperUrl: 'whitepaperUrl',
   likes: 'likes',
+  target: 'target',
+  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   signature: 'signature'

@@ -1,7 +1,5 @@
 import express from "express";
-import type {Unsubscribe} from "@mysten/sui.js/client";
 import cors from "cors";
-import {client, prisma} from "./config";
 import coinRouter from "./routes/coins"
 import postRouter from "./routes/thread"
 
@@ -18,6 +16,7 @@ const server = app.listen(process.env.PORT || 3005, () =>
 );
 
 const COIN_SOCIALS_UPDATED_EVENT = 'CoinSocialsUpdatedEvent'
+const STATUS_UPDATED_EVENT = 'CoinStatusChangedEvent'
 const SWAP_EVENT = 'SwapEvent'
 
 let globalCoins: { packageId: string }[] = [];
@@ -74,6 +73,15 @@ let globalCoins: { packageId: string }[] = [];
 //                         coinId: packageId,
 //                         transactionId: txDigest,
 //                         isBuy: is_buy
+//                     }
+//                 })
+//             } else if (eventType === STATUS_UPDATED_EVENT) {
+//                 console.log("STATUS_UPDATED_EVENT", event.parsedJson)
+//                 let {new_status} = event.parsedJson;
+//                 await prisma.coin.update({
+//                     where: {packageId: packageId},
+//                     data: {
+//                         status: new_status
 //                     }
 //                 })
 //             }

@@ -1091,11 +1091,15 @@ export namespace Prisma {
   export type CoinAvgAggregateOutputType = {
     decimals: number | null
     likes: number | null
+    target: number | null
+    status: number | null
   }
 
   export type CoinSumAggregateOutputType = {
     decimals: number | null
     likes: number | null
+    target: number | null
+    status: number | null
   }
 
   export type CoinMinAggregateOutputType = {
@@ -1115,6 +1119,8 @@ export namespace Prisma {
     telegramUrl: string | null
     whitepaperUrl: string | null
     likes: number | null
+    target: number | null
+    status: number | null
     createdAt: Date | null
     updatedAt: Date | null
     signature: string | null
@@ -1137,6 +1143,8 @@ export namespace Prisma {
     telegramUrl: string | null
     whitepaperUrl: string | null
     likes: number | null
+    target: number | null
+    status: number | null
     createdAt: Date | null
     updatedAt: Date | null
     signature: string | null
@@ -1159,6 +1167,8 @@ export namespace Prisma {
     telegramUrl: number
     whitepaperUrl: number
     likes: number
+    target: number
+    status: number
     createdAt: number
     updatedAt: number
     signature: number
@@ -1169,11 +1179,15 @@ export namespace Prisma {
   export type CoinAvgAggregateInputType = {
     decimals?: true
     likes?: true
+    target?: true
+    status?: true
   }
 
   export type CoinSumAggregateInputType = {
     decimals?: true
     likes?: true
+    target?: true
+    status?: true
   }
 
   export type CoinMinAggregateInputType = {
@@ -1193,6 +1207,8 @@ export namespace Prisma {
     telegramUrl?: true
     whitepaperUrl?: true
     likes?: true
+    target?: true
+    status?: true
     createdAt?: true
     updatedAt?: true
     signature?: true
@@ -1215,6 +1231,8 @@ export namespace Prisma {
     telegramUrl?: true
     whitepaperUrl?: true
     likes?: true
+    target?: true
+    status?: true
     createdAt?: true
     updatedAt?: true
     signature?: true
@@ -1237,6 +1255,8 @@ export namespace Prisma {
     telegramUrl?: true
     whitepaperUrl?: true
     likes?: true
+    target?: true
+    status?: true
     createdAt?: true
     updatedAt?: true
     signature?: true
@@ -1346,6 +1366,8 @@ export namespace Prisma {
     telegramUrl: string
     whitepaperUrl: string
     likes: number
+    target: number
+    status: number
     createdAt: Date
     updatedAt: Date
     signature: string
@@ -1387,6 +1409,8 @@ export namespace Prisma {
     telegramUrl?: boolean
     whitepaperUrl?: boolean
     likes?: boolean
+    target?: boolean
+    status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     signature?: boolean
@@ -1412,6 +1436,8 @@ export namespace Prisma {
     telegramUrl?: boolean
     whitepaperUrl?: boolean
     likes?: boolean
+    target?: boolean
+    status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     signature?: boolean
@@ -1448,6 +1474,8 @@ export namespace Prisma {
       telegramUrl: string
       whitepaperUrl: string
       likes: number
+      target: number
+      status: number
       createdAt: Date
       updatedAt: Date
       signature: string
@@ -1864,6 +1892,8 @@ export namespace Prisma {
     readonly telegramUrl: FieldRef<"Coin", 'String'>
     readonly whitepaperUrl: FieldRef<"Coin", 'String'>
     readonly likes: FieldRef<"Coin", 'Int'>
+    readonly target: FieldRef<"Coin", 'Int'>
+    readonly status: FieldRef<"Coin", 'Int'>
     readonly createdAt: FieldRef<"Coin", 'DateTime'>
     readonly updatedAt: FieldRef<"Coin", 'DateTime'>
     readonly signature: FieldRef<"Coin", 'String'>
@@ -4190,6 +4220,8 @@ export namespace Prisma {
     telegramUrl: 'telegramUrl',
     whitepaperUrl: 'whitepaperUrl',
     likes: 'likes',
+    target: 'target',
+    status: 'status',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     signature: 'signature'
@@ -4303,6 +4335,8 @@ export namespace Prisma {
     telegramUrl?: StringFilter<"Coin"> | string
     whitepaperUrl?: StringFilter<"Coin"> | string
     likes?: IntFilter<"Coin"> | number
+    target?: IntFilter<"Coin"> | number
+    status?: IntFilter<"Coin"> | number
     createdAt?: DateTimeFilter<"Coin"> | Date | string
     updatedAt?: DateTimeFilter<"Coin"> | Date | string
     signature?: StringFilter<"Coin"> | string
@@ -4327,6 +4361,8 @@ export namespace Prisma {
     telegramUrl?: SortOrder
     whitepaperUrl?: SortOrder
     likes?: SortOrder
+    target?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -4354,6 +4390,8 @@ export namespace Prisma {
     telegramUrl?: StringFilter<"Coin"> | string
     whitepaperUrl?: StringFilter<"Coin"> | string
     likes?: IntFilter<"Coin"> | number
+    target?: IntFilter<"Coin"> | number
+    status?: IntFilter<"Coin"> | number
     createdAt?: DateTimeFilter<"Coin"> | Date | string
     updatedAt?: DateTimeFilter<"Coin"> | Date | string
     signature?: StringFilter<"Coin"> | string
@@ -4378,6 +4416,8 @@ export namespace Prisma {
     telegramUrl?: SortOrder
     whitepaperUrl?: SortOrder
     likes?: SortOrder
+    target?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -4408,6 +4448,8 @@ export namespace Prisma {
     telegramUrl?: StringWithAggregatesFilter<"Coin"> | string
     whitepaperUrl?: StringWithAggregatesFilter<"Coin"> | string
     likes?: IntWithAggregatesFilter<"Coin"> | number
+    target?: IntWithAggregatesFilter<"Coin"> | number
+    status?: IntWithAggregatesFilter<"Coin"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Coin"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Coin"> | Date | string
     signature?: StringWithAggregatesFilter<"Coin"> | string
@@ -4569,6 +4611,8 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
+    target?: number
+    status?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -4593,6 +4637,8 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
+    target?: number
+    status?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -4617,6 +4663,8 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    target?: IntFieldUpdateOperationsInput | number
+    status?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -4641,6 +4689,8 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    target?: IntFieldUpdateOperationsInput | number
+    status?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -4665,6 +4715,8 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
+    target?: number
+    status?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -4687,6 +4739,8 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    target?: IntFieldUpdateOperationsInput | number
+    status?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -4709,6 +4763,8 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    target?: IntFieldUpdateOperationsInput | number
+    status?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -4926,6 +4982,8 @@ export namespace Prisma {
     telegramUrl?: SortOrder
     whitepaperUrl?: SortOrder
     likes?: SortOrder
+    target?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -4934,6 +4992,8 @@ export namespace Prisma {
   export type CoinAvgOrderByAggregateInput = {
     decimals?: SortOrder
     likes?: SortOrder
+    target?: SortOrder
+    status?: SortOrder
   }
 
   export type CoinMaxOrderByAggregateInput = {
@@ -4953,6 +5013,8 @@ export namespace Prisma {
     telegramUrl?: SortOrder
     whitepaperUrl?: SortOrder
     likes?: SortOrder
+    target?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -4975,6 +5037,8 @@ export namespace Prisma {
     telegramUrl?: SortOrder
     whitepaperUrl?: SortOrder
     likes?: SortOrder
+    target?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -4983,6 +5047,8 @@ export namespace Prisma {
   export type CoinSumOrderByAggregateInput = {
     decimals?: SortOrder
     likes?: SortOrder
+    target?: SortOrder
+    status?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -5566,6 +5632,8 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
+    target?: number
+    status?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -5589,6 +5657,8 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
+    target?: number
+    status?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -5628,6 +5698,8 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    target?: IntFieldUpdateOperationsInput | number
+    status?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -5651,6 +5723,8 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    target?: IntFieldUpdateOperationsInput | number
+    status?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -5674,6 +5748,8 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
+    target?: number
+    status?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -5697,6 +5773,8 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
+    target?: number
+    status?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -5736,6 +5814,8 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    target?: IntFieldUpdateOperationsInput | number
+    status?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -5759,6 +5839,8 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
+    target?: IntFieldUpdateOperationsInput | number
+    status?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
