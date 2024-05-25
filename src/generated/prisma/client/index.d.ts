@@ -3227,12 +3227,12 @@ export namespace Prisma {
   }
 
   export type PostSumAggregateOutputType = {
-    id: bigint | null
+    id: number | null
     likes: number | null
   }
 
   export type PostMinAggregateOutputType = {
-    id: bigint | null
+    id: number | null
     coinId: string | null
     authorId: string | null
     text: string | null
@@ -3241,7 +3241,7 @@ export namespace Prisma {
   }
 
   export type PostMaxAggregateOutputType = {
-    id: bigint | null
+    id: number | null
     coinId: string | null
     authorId: string | null
     text: string | null
@@ -3385,7 +3385,7 @@ export namespace Prisma {
   }
 
   export type PostGroupByOutputType = {
-    id: bigint
+    id: number
     coinId: string
     authorId: string
     text: string
@@ -3443,7 +3443,7 @@ export namespace Prisma {
       coin: Prisma.$CoinPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      id: bigint
+      id: number
       coinId: string
       authorId: string
       text: string
@@ -3844,7 +3844,7 @@ export namespace Prisma {
    * Fields of the Post model
    */ 
   interface PostFieldRefs {
-    readonly id: FieldRef<"Post", 'BigInt'>
+    readonly id: FieldRef<"Post", 'Int'>
     readonly coinId: FieldRef<"Post", 'String'>
     readonly authorId: FieldRef<"Post", 'String'>
     readonly text: FieldRef<"Post", 'String'>
@@ -4494,7 +4494,7 @@ export namespace Prisma {
     AND?: PostWhereInput | PostWhereInput[]
     OR?: PostWhereInput[]
     NOT?: PostWhereInput | PostWhereInput[]
-    id?: BigIntFilter<"Post"> | bigint | number
+    id?: IntFilter<"Post"> | number
     coinId?: StringFilter<"Post"> | string
     authorId?: StringFilter<"Post"> | string
     text?: StringFilter<"Post"> | string
@@ -4514,7 +4514,7 @@ export namespace Prisma {
   }
 
   export type PostWhereUniqueInput = Prisma.AtLeast<{
-    id?: bigint | number
+    id?: number
     AND?: PostWhereInput | PostWhereInput[]
     OR?: PostWhereInput[]
     NOT?: PostWhereInput | PostWhereInput[]
@@ -4544,7 +4544,7 @@ export namespace Prisma {
     AND?: PostScalarWhereWithAggregatesInput | PostScalarWhereWithAggregatesInput[]
     OR?: PostScalarWhereWithAggregatesInput[]
     NOT?: PostScalarWhereWithAggregatesInput | PostScalarWhereWithAggregatesInput[]
-    id?: BigIntWithAggregatesFilter<"Post"> | bigint | number
+    id?: IntWithAggregatesFilter<"Post"> | number
     coinId?: StringWithAggregatesFilter<"Post"> | string
     authorId?: StringWithAggregatesFilter<"Post"> | string
     text?: StringWithAggregatesFilter<"Post"> | string
@@ -4795,7 +4795,6 @@ export namespace Prisma {
   }
 
   export type PostCreateInput = {
-    id?: bigint | number
     authorId?: string
     text: string
     likes?: number
@@ -4804,7 +4803,7 @@ export namespace Prisma {
   }
 
   export type PostUncheckedCreateInput = {
-    id?: bigint | number
+    id?: number
     coinId: string
     authorId?: string
     text: string
@@ -4813,7 +4812,6 @@ export namespace Prisma {
   }
 
   export type PostUpdateInput = {
-    id?: BigIntFieldUpdateOperationsInput | bigint | number
     authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
@@ -4822,7 +4820,7 @@ export namespace Prisma {
   }
 
   export type PostUncheckedUpdateInput = {
-    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    id?: IntFieldUpdateOperationsInput | number
     coinId?: StringFieldUpdateOperationsInput | string
     authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
@@ -4831,7 +4829,7 @@ export namespace Prisma {
   }
 
   export type PostCreateManyInput = {
-    id?: bigint | number
+    id?: number
     coinId: string
     authorId?: string
     text: string
@@ -4840,7 +4838,6 @@ export namespace Prisma {
   }
 
   export type PostUpdateManyMutationInput = {
-    id?: BigIntFieldUpdateOperationsInput | bigint | number
     authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
@@ -4848,7 +4845,7 @@ export namespace Prisma {
   }
 
   export type PostUncheckedUpdateManyInput = {
-    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    id?: IntFieldUpdateOperationsInput | number
     coinId?: StringFieldUpdateOperationsInput | string
     authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
@@ -5470,7 +5467,6 @@ export namespace Prisma {
   }
 
   export type PostCreateWithoutCoinInput = {
-    id?: bigint | number
     authorId?: string
     text: string
     likes?: number
@@ -5478,7 +5474,7 @@ export namespace Prisma {
   }
 
   export type PostUncheckedCreateWithoutCoinInput = {
-    id?: bigint | number
+    id?: number
     authorId?: string
     text: string
     likes?: number
@@ -5545,7 +5541,7 @@ export namespace Prisma {
     AND?: PostScalarWhereInput | PostScalarWhereInput[]
     OR?: PostScalarWhereInput[]
     NOT?: PostScalarWhereInput | PostScalarWhereInput[]
-    id?: BigIntFilter<"Post"> | bigint | number
+    id?: IntFilter<"Post"> | number
     coinId?: StringFilter<"Post"> | string
     authorId?: StringFilter<"Post"> | string
     text?: StringFilter<"Post"> | string
@@ -5781,7 +5777,7 @@ export namespace Prisma {
   }
 
   export type PostCreateManyCoinInput = {
-    id?: bigint | number
+    id?: number
     authorId?: string
     text: string
     likes?: number
@@ -5821,7 +5817,6 @@ export namespace Prisma {
   }
 
   export type PostUpdateWithoutCoinInput = {
-    id?: BigIntFieldUpdateOperationsInput | bigint | number
     authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
@@ -5829,7 +5824,7 @@ export namespace Prisma {
   }
 
   export type PostUncheckedUpdateWithoutCoinInput = {
-    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    id?: IntFieldUpdateOperationsInput | number
     authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
@@ -5837,7 +5832,7 @@ export namespace Prisma {
   }
 
   export type PostUncheckedUpdateManyWithoutCoinInput = {
-    id?: BigIntFieldUpdateOperationsInput | bigint | number
+    id?: IntFieldUpdateOperationsInput | number
     authorId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
