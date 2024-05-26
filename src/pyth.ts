@@ -1,4 +1,4 @@
-import { SuiPriceServiceConnection } from "@pythnetwork/pyth-sui-js";
+// Demo script for fetching Sui price from Pyth. Call w/ `ts-node src/pyth.ts`
 import axios from "axios";
 
 //
@@ -28,6 +28,6 @@ import axios from "axios";
     const priceObj = res.data?.parsed?.[0]?.price;
     const {price, expo} = priceObj;
     console.log(price, expo)
-    const priceNumber = price *  Math.pow(10, expo);
+    const priceNumber = price * Math.pow(10, expo);
     console.log("Price in USD: $", priceNumber.toString())
 })()

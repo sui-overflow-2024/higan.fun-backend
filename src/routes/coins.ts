@@ -222,13 +222,17 @@ router.post("/coins", async (req, res) => {
             name_snake_case_caps: toSnakeCase(name).toUpperCase(),
             name_snake_case: toSnakeCase(name),
             name_capital_camel_case: toPascalCase(name),
-            decimals,
-            symbol,
-            description,
-            icon_url: iconUrl,
+            coin_metadata_decimals: decimals, //NOTE: Decimals are hardcoded to 3 in the template contract, this does nothing
+            coin_metadata_icon_url: iconUrl,
+            coin_metadata_symbol: symbol,
+            coin_metadata_description: description,
+            optional_metadata_website_url: website,
+            optional_metadata_twitter_url: twitterUrl,
+            optional_metadata_discord_url: discordUrl,
+            optional_metadata_telegram_url: telegramUrl,
         };
+
         const tokenCode = tokenTemplate(templateData);
-        console.log(tokenCode);
         const moveToml = moveTomlTemplate({});
 
         const id = crypto.randomBytes(16).toString("hex");

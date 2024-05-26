@@ -2,7 +2,6 @@ import {WebSocket} from "ws";
 import {getFullnodeUrl, SuiClient, SuiHTTPTransport} from "@mysten/sui.js/client";
 import { PrismaClient } from "./generated/prisma/client";
 
-
 export const network = process.env.NETWORK || "localnet";
 if (network !== "localnet" && network !== "testnet" && network !== "mainnet" && network !== "devnet") {
     throw new Error(`Invalid network: ${network}. Please use localnet, testnet, mainnet, or devnet`);

@@ -1,19 +1,15 @@
 import handlebars from 'handlebars';
 
 export const tokenTemplate =
-  handlebars.compile(`
-  /// Example custom coin. The backend uses this as a template
-#[allow(duplicate_alias)]
-module we_hate_the_ui_contracts::{{name_snake_case}} {
-    use std::option;
+  handlebars.compile(`module we_hate_the_ui_contracts::{{name_snake_case}} {
     use sui::coin::{Self, Coin, TreasuryCap};
-    use sui::transfer;
-    use sui::tx_context::{sender, TxContext};
-    use sui::object::{Self, UID};
+    use sui::tx_context::{sender};
     use sui::balance::{Self, Balance};
     use sui::sui::SUI;
+    use sui::url;
     use std::string::{Self, String};
     use std::debug;
+    use std::ascii;
     // use sui::math;
     use sui::event;
 
@@ -33,10 +29,11 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
     const PRICE_INCREASE_PER_COIN: u64 = 1; // INCREASE PRICE BY ONE MIST PER COIN MINTED
     const INITIAL_COIN_PRICE: u64 = 1_000; // 0.000001 SUI
 
-   const STATUS_STARTING_UP: u64 = 0;
-    const STATUS_OPEN: u64 = 1;
-    const STATUS_CLOSE_PENDING: u64 = 2;
-    const STATUS_CLOSED: u64 = 3;
+    // Statuses for coin lifecycle
+    const STATUS_STARTING_UP: u64 = 0; // Coin has been created, but we need to do a follow up call to init metadata
+    const STATUS_OPEN: u64 = 1; // Coin is ready for buys/sells
+    const STATUS_CLOSE_PENDING: u64 = 2; // Coin has hit target, but we haven't yet created the LP for it
+    const STATUS_CLOSED: u64 = 3; // We have created the LP, burned the LP tokens, and the initial bonding curve is done
 
     /// Note: For some reason the OTW has to be named the same as the address
     public struct {{name_snake_case_caps}} has drop {}
@@ -84,35 +81,31 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         sui_coin_amount: Balance<SUI>,
         status: u64,
         target: u64 //Amount in MIST that when crossed closes the token
-        // whitepaperUrl: String,
     }
 
     fun init(witness: {{name_snake_case_caps}}, ctx: &mut TxContext) {
-        let (treasury_cap, coin_metadata) = coin::create_currency<{{name_snake_case_caps}}>(witness, 3, b"{{name_snake_case_caps}}", b"XMP", b"", option::none(), ctx);
+        let iconUrl = option::some(url::new_unsafe(ascii::string(b"{{coin_metadata_icon_url}}")));
+        let (treasury_cap, coin_metadata) = coin::create_currency<{{name_snake_case_caps}}>(witness, 3, b"{{name_snake_case_caps}}", b"{{coin_metadata_symbol}}", b"{{coin_metadata_description}}", iconUrl, ctx);
         transfer::public_freeze_object(coin_metadata);
 
         // create and share the {{name_capital_camel_case}}Store
         transfer::share_object({{name_capital_camel_case}}Store {
             id: object::new(ctx),
             treasury: treasury_cap,
-            creator: ctx.sender(),
+            creator: ctx.sender(), //TODO Figure out how to populate this in the template
             publisher: ctx.sender(),
-            telegram_url: string::utf8(b""),
-            discord_url: string::utf8(b""),
-            twitter_url: string::utf8(b""),
-            website_url: string::utf8(b""),
+            website_url: string::utf8(b"{{optional_metadata_website_url}}"),
+            telegram_url: string::utf8(b"{{optional_metadata_telegram_url}}"),
+            discord_url: string::utf8(b"{{optional_metadata_discord_url}}"),
+            twitter_url: string::utf8(b"{{optional_metadata_twitter_url}}"),
             sui_coin_amount: balance::zero(),
             status: STATUS_STARTING_UP,
-            target: 0
-            // whitepaperUrl: String::from(""),
+            target: 0 // TODO when you figure out how to populate creator, also populate this
         });
-
 
         transfer::transfer(SetCriticalMetadataCap {
             id: object::new(ctx)
         }, ctx.sender());
-
-
     }
 
     // Manager will eventually transfer the treasury cap to the creator
@@ -134,7 +127,6 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
 
         coin::put(&mut self.sui_coin_amount, payment);
 
-        //TODO Later remove the below and return coin for PTB
         coin::mint_and_transfer(&mut self.treasury, mintAmount, sender(ctx), ctx);
 
         let balance_after: u64 = balance::value<SUI>(&self.sui_coin_amount) + payment_amount;
@@ -179,6 +171,12 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         transfer::public_transfer(returnSui, ctx.sender())
     }
 
+
+    public fun get_sui_balance(self: &{{name_capital_camel_case}}Store): u64 {
+        self.sui_coin_amount.value()
+    }
+
+    // Returns current price of the token based on the bonding curve
     public fun get_coin_price(self: &{{name_capital_camel_case}}Store): u64 {
         let total_supply: u64 = coin::total_supply(&self.treasury);
 
@@ -190,20 +188,20 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         }
     }
 
-    public fun get_sui_balance(self: &{{name_capital_camel_case}}Store): u64 {
-        self.sui_coin_amount.value()
-    }
-
+    // Returns the amount in SUI a user must pay to buy some amount of the token
     public fun get_coin_buy_price(self: &{{name_capital_camel_case}}Store, payment: u64): u64 {
         let s0: u64 = coin::total_supply(&self.treasury);
         let s1: u64 = s0 + payment;
 
+        //Formula that considers integer division edge cases
+        //m * (S1 * (S1 + 1) - S0 * (S0 + 1)) / 2 + b * (S1 - S0)
         let total_cost = (PRICE_INCREASE_PER_COIN * (s1 * (s1 + 1) - s0 * (s0 + 1)) / 2) + (INITIAL_COIN_PRICE * (s1 - s0));
         // let total_cost = (100 * (math::pow(s1, 2) - math::pow(s0, 2)) / 2) + (initialPrice * (s1 - s0));
 
         total_cost
     }
 
+    // Returns the amount in SUI a user will receive for selling some amount of the token
     public fun get_coin_sell_price(self: &{{name_capital_camel_case}}Store, payment: u64): u64 {
         let s0: u64 = coin::total_supply(&self.treasury);
         let s1: u64 = s0 - payment;
@@ -214,6 +212,8 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         total_cost
     }
 
+    // Set the critical metadata for the coin, creator and target
+    // TODO, we have logic here to make sure this only gets called once, but really we want to burn the cap and check that the cap is burned before engaging w/ the token
     public fun set_critical_metadata(self: &mut {{name_capital_camel_case}}Store, _: &mut SetCriticalMetadataCap, target: u64, creator: address){
         assert!(self.status == STATUS_STARTING_UP, ETokenAlreadyInitialized);
         assert!(target > 0, EValMustBeGreaterThanZero);
@@ -240,7 +240,6 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
     }
 
     public fun set_coin_social_metadata(self: &mut {{name_capital_camel_case}}Store, telegram_url: String, discord_url: String, twitter_url: String, website_url: String, ctx: &mut TxContext) {
-        // assert!(self.create() == ctx.sender(), ENotEnoughSuiForCoinPurchase)
         //TODO Code smell, with this block we MUST update socials before setting critical metadata, since crit metadata updates creator
         assert!(self.creator == ctx.sender(), EInvalidOwner);
 
@@ -259,113 +258,13 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         });
     }
 
-    public fun sell_action(): String { string::utf8(b"sell_token") }
 
     public fun dump_self(self: &{{name_capital_camel_case}}Store) {
         debug::print(self)
     }
 
-
-    #[test_only] use sui::test_scenario;
-    #[test_only] use sui::test_utils;
-    #[test]
-    fun test_buy_price() {
-          // Initialize a mock sender address
-        let addr1 = @0xA;
-        let creator = @0xB;
-        // Begins a multi-transaction scenario with addr1 as the sender
-        let mut scenario = test_scenario::begin(addr1);
-
-        // scenario.next_tx(addr1);
-        {
-            init({{name_snake_case_caps}} {}, scenario.ctx());
-        };
-
-
-        
-        // Set critical metadata first
-        test_scenario::next_tx(&mut scenario, addr1);
-        {
-            let mut coinExampleStore = test_scenario::take_shared<{{name_capital_camel_case}}Store>(&scenario);
-            let mut adminCap = test_scenario::take_from_sender<SetCriticalMetadataCap>(&scenario);
-            
-            assert!(coinExampleStore.status == STATUS_STARTING_UP);
-            set_critical_metadata(&mut coinExampleStore, &mut adminCap, 10_000_000, creator); //One sui target, buy below will go over
-            test_utils::assert_eq<u64>(coinExampleStore.status, STATUS_OPEN);
-            test_utils::assert_eq<u64>(coinExampleStore.target, 10_000_000);
-            test_utils::assert_eq<address>(coinExampleStore.creator, creator);
-            test_scenario::return_shared(coinExampleStore);
-            test_scenario::return_to_sender(&scenario, adminCap);
-        };
-
-        //Buy coins, starting with 1 ending with 100
-        test_scenario::next_tx(&mut scenario, addr1);
-        {
-            let mut coinExampleStore = test_scenario::take_shared<{{name_capital_camel_case}}Store>(&scenario);
-            let adminCap = test_scenario::take_from_sender<SetCriticalMetadataCap>(&scenario);
-        
-            test_utils::assert_eq<u64>(get_coin_price(&coinExampleStore), 1_000);
-            let buy1Price = get_coin_buy_price(&coinExampleStore, 1_000);
-            debug::print(&string::utf8(b"buy1price"));
-            debug::print(&buy1Price);
-            test_utils::assert_eq<u64>(buy1Price, 1_500_500);
-            let buy1coin = coin::mint_for_testing<SUI>(buy1Price, test_scenario::ctx(&mut scenario));
-            
-            buy_coins(&mut coinExampleStore, buy1coin, 1_000, test_scenario::ctx(&mut scenario));
-            test_utils::assert_eq<u64>(coinExampleStore.status, STATUS_OPEN); //We haven't hit target, so we're still open
-                
-
-            let buy100Price = get_coin_buy_price(&coinExampleStore, 100_000);
-            debug::print(&string::utf8(b"buy100price"));
-            debug::print(&buy100Price);
-            test_utils::assert_eq<u64>(buy100Price, 5_200_050_000);
-            debug::print(&string::utf8(b"done"));
-            let buy100coin = coin::mint_for_testing<SUI>(buy100Price, test_scenario::ctx(&mut scenario));
-            buy_coins(&mut coinExampleStore, buy100coin, 100_000, test_scenario::ctx(&mut scenario));
-            test_utils::assert_eq<u64>(coinExampleStore.status, STATUS_CLOSE_PENDING); //We hit target, coin should no longer be open for trades
-
-            let reserve_balance = &coinExampleStore.sui_coin_amount;
-            test_utils::assert_eq<u64>(reserve_balance.value(), buy1Price + buy100Price);
-            test_utils::assert_eq<u64>(coin::total_supply(&coinExampleStore.treasury), 1_000 + 100_000);
-
-            test_scenario::return_shared(coinExampleStore);
-            test_scenario::return_to_sender(&scenario, adminCap);
-        };
-        // Cleans up the scenario object
-        scenario.end();
-    }
-
-    #[test]
-    // https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/packages/sui-framework/sources/test/test_scenario.move
-    // https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/packages/sui-framework/sources/test/test_utils.move
-    fun test_set_coin_metadata() {
-        let addr1 = @0xA;
-        // Begins a multi-transaction scenario with addr1 as the sender
-        let mut scenario = test_scenario::begin(addr1);
-
-        // scenario.next_tx(addr1);
-        {
-            init({{name_snake_case_caps}} {}, scenario.ctx());
-        };
-
-      test_scenario::next_tx(&mut scenario, addr1);
-      {
-        let mut coinExampleStore = test_scenario::take_shared<{{name_capital_camel_case}}Store>(&scenario);
-
-        set_coin_social_metadata(&mut coinExampleStore, string::utf8(b"telegram_url"), string::utf8(b"discord_url"), string::utf8(b"twitter_url"), string::utf8(b"website_url"), scenario.ctx());
-
-        test_utils::assert_eq<String>(coinExampleStore.telegram_url, string::utf8(b"telegram_url"));
-        test_utils::assert_eq<String>(coinExampleStore.discord_url, string::utf8(b"discord_url"));
-        test_utils::assert_eq<String>(coinExampleStore.twitter_url, string::utf8(b"twitter_url"));
-        test_utils::assert_eq<String>(coinExampleStore.website_url, string::utf8(b"website_url"));
-
-        test_scenario::return_shared<{{name_capital_camel_case}}Store>(coinExampleStore);
-      };
-
-        scenario.end();
-    }
+     
 }
-
 `);
 
 export const moveTomlTemplate = handlebars.compile(`

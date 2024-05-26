@@ -45,22 +45,6 @@ router.get('/coin/:coinId/posts', async (req, res) => {
     res.json(threads);
 });
 
-
-// Create Thread
-// Every coin has a thread
-// model Post {
-//     id       BigInt @id @default(autoincrement())
-//     coinId   String
-//     author String @default("")
-//     text     String
-//     // text     String @db.VarChar(1000)
-//     likes    Int    @default(0)
-//     // author   User   @relation(fields: [authorId], references: [id])
-//     coin     Coin   @relation(fields: [coinId], references: [packageId])
-//     createdAt DateTime @default(now())
-// }
-
-
 router.post('/post', async (req: Request<{}, any, ThreadPostRequest>, res: Response) => {
         const validation = threadSchema.validate(req.body);
         console.log("validation", validation)
@@ -86,29 +70,26 @@ router.post('/post', async (req: Request<{}, any, ThreadPostRequest>, res: Respo
         });
         res.json(newThread);
     }
-)
-;
+);
 
 // Update Thread
 // router.put('/post/:id', async (req: Request<{id: number}, any, PostUpdateArgs>, res) => {
-//     //Request has signature
-//     // YOu verify the signature
-//     // You allow editing the thread ONLY if the signature comes from the person who wrote the comment
-//
-//     // const { message, signature } = req.body;
-//     // const recoveredAddress = extractAddressFromMessage(message, signature);
-//     // if (!recoveredAddress === message.account) {
-//     //     logger.warn(`Received signature from address that doesn't match the signature.
-//     // Got ${message.account} in the message but recovered ${recoveredAddress}`);
-//     //     return res.status(401).send("Signature doesn't match the message");
-//     // }
-//     // next();
+// TODO If you implement this, create a sig auth middleware
+//     const { message, signature } = req.body;
+//     const recoveredAddress = extractAddressFromMessage(message, signature);
+//     if (!recoveredAddress === message.account) {
+//         logger.warn(`Received signature from address that doesn't match the signature.
+//     Got ${message.account} in the message but recovered ${recoveredAddress}`);
+//         return res.status(401).send("Signature doesn't match the message");
+//     }
+//     next();
 //     const updatedThread = await prisma.thread.update({where: {id: req.params.id}, data: req.body};
 //     res.json(updatedThread);
 // });
 
 // Delete Thread
 // router.delete('/thread/:id', async (req, res) => {
+// TODO If you implement this, create a sig auth middleware
 //     await Thread.deleteThread(req.params.id);
 //     res.json({ message: 'Thread deleted' });
 // });

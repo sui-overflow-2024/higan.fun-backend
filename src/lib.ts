@@ -11,6 +11,7 @@ export const toSnakeCase: (str: string) => string = (str) => {
     const res = str.replaceAll(" ", "_").toLowerCase()
     return str.replaceAll(" ", "_").toLowerCase()
 }
+
 export const toSnakeCaseUpper: (str: string) => string = (str) => {
     return str.replaceAll(" ", "_").toUpperCase()
 }
