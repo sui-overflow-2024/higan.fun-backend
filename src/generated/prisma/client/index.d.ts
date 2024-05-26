@@ -1093,13 +1093,15 @@ export namespace Prisma {
     likes: number | null
     target: number | null
     status: number | null
+    suiReserve: number | null
   }
 
   export type CoinSumAggregateOutputType = {
     decimals: number | null
     likes: number | null
-    target: number | null
+    target: bigint | null
     status: number | null
+    suiReserve: bigint | null
   }
 
   export type CoinMinAggregateOutputType = {
@@ -1119,8 +1121,9 @@ export namespace Prisma {
     telegramUrl: string | null
     whitepaperUrl: string | null
     likes: number | null
-    target: number | null
+    target: bigint | null
     status: number | null
+    suiReserve: bigint | null
     createdAt: Date | null
     updatedAt: Date | null
     signature: string | null
@@ -1143,8 +1146,9 @@ export namespace Prisma {
     telegramUrl: string | null
     whitepaperUrl: string | null
     likes: number | null
-    target: number | null
+    target: bigint | null
     status: number | null
+    suiReserve: bigint | null
     createdAt: Date | null
     updatedAt: Date | null
     signature: string | null
@@ -1169,6 +1173,7 @@ export namespace Prisma {
     likes: number
     target: number
     status: number
+    suiReserve: number
     createdAt: number
     updatedAt: number
     signature: number
@@ -1181,6 +1186,7 @@ export namespace Prisma {
     likes?: true
     target?: true
     status?: true
+    suiReserve?: true
   }
 
   export type CoinSumAggregateInputType = {
@@ -1188,6 +1194,7 @@ export namespace Prisma {
     likes?: true
     target?: true
     status?: true
+    suiReserve?: true
   }
 
   export type CoinMinAggregateInputType = {
@@ -1209,6 +1216,7 @@ export namespace Prisma {
     likes?: true
     target?: true
     status?: true
+    suiReserve?: true
     createdAt?: true
     updatedAt?: true
     signature?: true
@@ -1233,6 +1241,7 @@ export namespace Prisma {
     likes?: true
     target?: true
     status?: true
+    suiReserve?: true
     createdAt?: true
     updatedAt?: true
     signature?: true
@@ -1257,6 +1266,7 @@ export namespace Prisma {
     likes?: true
     target?: true
     status?: true
+    suiReserve?: true
     createdAt?: true
     updatedAt?: true
     signature?: true
@@ -1366,8 +1376,9 @@ export namespace Prisma {
     telegramUrl: string
     whitepaperUrl: string
     likes: number
-    target: number
+    target: bigint
     status: number
+    suiReserve: bigint
     createdAt: Date
     updatedAt: Date
     signature: string
@@ -1411,6 +1422,7 @@ export namespace Prisma {
     likes?: boolean
     target?: boolean
     status?: boolean
+    suiReserve?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     signature?: boolean
@@ -1438,6 +1450,7 @@ export namespace Prisma {
     likes?: boolean
     target?: boolean
     status?: boolean
+    suiReserve?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     signature?: boolean
@@ -1474,8 +1487,9 @@ export namespace Prisma {
       telegramUrl: string
       whitepaperUrl: string
       likes: number
-      target: number
+      target: bigint
       status: number
+      suiReserve: bigint
       createdAt: Date
       updatedAt: Date
       signature: string
@@ -1892,8 +1906,9 @@ export namespace Prisma {
     readonly telegramUrl: FieldRef<"Coin", 'String'>
     readonly whitepaperUrl: FieldRef<"Coin", 'String'>
     readonly likes: FieldRef<"Coin", 'Int'>
-    readonly target: FieldRef<"Coin", 'Int'>
+    readonly target: FieldRef<"Coin", 'BigInt'>
     readonly status: FieldRef<"Coin", 'Int'>
+    readonly suiReserve: FieldRef<"Coin", 'BigInt'>
     readonly createdAt: FieldRef<"Coin", 'DateTime'>
     readonly updatedAt: FieldRef<"Coin", 'DateTime'>
     readonly signature: FieldRef<"Coin", 'String'>
@@ -2265,12 +2280,14 @@ export namespace Prisma {
     id: number | null
     suiAmount: number | null
     coinAmount: number | null
+    coinPrice: number | null
   }
 
   export type TradeSumAggregateOutputType = {
     id: number | null
     suiAmount: bigint | null
     coinAmount: bigint | null
+    coinPrice: bigint | null
   }
 
   export type TradeMinAggregateOutputType = {
@@ -2280,6 +2297,7 @@ export namespace Prisma {
     isBuy: boolean | null
     account: string | null
     coinId: string | null
+    coinPrice: bigint | null
     transactionId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2292,6 +2310,7 @@ export namespace Prisma {
     isBuy: boolean | null
     account: string | null
     coinId: string | null
+    coinPrice: bigint | null
     transactionId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2304,6 +2323,7 @@ export namespace Prisma {
     isBuy: number
     account: number
     coinId: number
+    coinPrice: number
     transactionId: number
     createdAt: number
     updatedAt: number
@@ -2315,12 +2335,14 @@ export namespace Prisma {
     id?: true
     suiAmount?: true
     coinAmount?: true
+    coinPrice?: true
   }
 
   export type TradeSumAggregateInputType = {
     id?: true
     suiAmount?: true
     coinAmount?: true
+    coinPrice?: true
   }
 
   export type TradeMinAggregateInputType = {
@@ -2330,6 +2352,7 @@ export namespace Prisma {
     isBuy?: true
     account?: true
     coinId?: true
+    coinPrice?: true
     transactionId?: true
     createdAt?: true
     updatedAt?: true
@@ -2342,6 +2365,7 @@ export namespace Prisma {
     isBuy?: true
     account?: true
     coinId?: true
+    coinPrice?: true
     transactionId?: true
     createdAt?: true
     updatedAt?: true
@@ -2354,6 +2378,7 @@ export namespace Prisma {
     isBuy?: true
     account?: true
     coinId?: true
+    coinPrice?: true
     transactionId?: true
     createdAt?: true
     updatedAt?: true
@@ -2453,6 +2478,7 @@ export namespace Prisma {
     isBuy: boolean
     account: string
     coinId: string
+    coinPrice: bigint
     transactionId: string
     createdAt: Date
     updatedAt: Date
@@ -2484,6 +2510,7 @@ export namespace Prisma {
     isBuy?: boolean
     account?: boolean
     coinId?: boolean
+    coinPrice?: boolean
     transactionId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2497,6 +2524,7 @@ export namespace Prisma {
     isBuy?: boolean
     account?: boolean
     coinId?: boolean
+    coinPrice?: boolean
     transactionId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2520,6 +2548,7 @@ export namespace Prisma {
       isBuy: boolean
       account: string
       coinId: string
+      coinPrice: bigint
       transactionId: string
       createdAt: Date
       updatedAt: Date
@@ -2924,6 +2953,7 @@ export namespace Prisma {
     readonly isBuy: FieldRef<"Trade", 'Boolean'>
     readonly account: FieldRef<"Trade", 'String'>
     readonly coinId: FieldRef<"Trade", 'String'>
+    readonly coinPrice: FieldRef<"Trade", 'BigInt'>
     readonly transactionId: FieldRef<"Trade", 'String'>
     readonly createdAt: FieldRef<"Trade", 'DateTime'>
     readonly updatedAt: FieldRef<"Trade", 'DateTime'>
@@ -4222,6 +4252,7 @@ export namespace Prisma {
     likes: 'likes',
     target: 'target',
     status: 'status',
+    suiReserve: 'suiReserve',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     signature: 'signature'
@@ -4237,6 +4268,7 @@ export namespace Prisma {
     isBuy: 'isBuy',
     account: 'account',
     coinId: 'coinId',
+    coinPrice: 'coinPrice',
     transactionId: 'transactionId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -4285,16 +4317,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'DateTime'
+   * Reference to a field of type 'BigInt'
    */
-  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
     
 
 
   /**
-   * Reference to a field of type 'BigInt'
+   * Reference to a field of type 'DateTime'
    */
-  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
     
 
 
@@ -4335,8 +4367,9 @@ export namespace Prisma {
     telegramUrl?: StringFilter<"Coin"> | string
     whitepaperUrl?: StringFilter<"Coin"> | string
     likes?: IntFilter<"Coin"> | number
-    target?: IntFilter<"Coin"> | number
+    target?: BigIntFilter<"Coin"> | bigint | number
     status?: IntFilter<"Coin"> | number
+    suiReserve?: BigIntFilter<"Coin"> | bigint | number
     createdAt?: DateTimeFilter<"Coin"> | Date | string
     updatedAt?: DateTimeFilter<"Coin"> | Date | string
     signature?: StringFilter<"Coin"> | string
@@ -4363,6 +4396,7 @@ export namespace Prisma {
     likes?: SortOrder
     target?: SortOrder
     status?: SortOrder
+    suiReserve?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -4390,8 +4424,9 @@ export namespace Prisma {
     telegramUrl?: StringFilter<"Coin"> | string
     whitepaperUrl?: StringFilter<"Coin"> | string
     likes?: IntFilter<"Coin"> | number
-    target?: IntFilter<"Coin"> | number
+    target?: BigIntFilter<"Coin"> | bigint | number
     status?: IntFilter<"Coin"> | number
+    suiReserve?: BigIntFilter<"Coin"> | bigint | number
     createdAt?: DateTimeFilter<"Coin"> | Date | string
     updatedAt?: DateTimeFilter<"Coin"> | Date | string
     signature?: StringFilter<"Coin"> | string
@@ -4418,6 +4453,7 @@ export namespace Prisma {
     likes?: SortOrder
     target?: SortOrder
     status?: SortOrder
+    suiReserve?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -4448,8 +4484,9 @@ export namespace Prisma {
     telegramUrl?: StringWithAggregatesFilter<"Coin"> | string
     whitepaperUrl?: StringWithAggregatesFilter<"Coin"> | string
     likes?: IntWithAggregatesFilter<"Coin"> | number
-    target?: IntWithAggregatesFilter<"Coin"> | number
+    target?: BigIntWithAggregatesFilter<"Coin"> | bigint | number
     status?: IntWithAggregatesFilter<"Coin"> | number
+    suiReserve?: BigIntWithAggregatesFilter<"Coin"> | bigint | number
     createdAt?: DateTimeWithAggregatesFilter<"Coin"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Coin"> | Date | string
     signature?: StringWithAggregatesFilter<"Coin"> | string
@@ -4465,6 +4502,7 @@ export namespace Prisma {
     isBuy?: BoolFilter<"Trade"> | boolean
     account?: StringFilter<"Trade"> | string
     coinId?: StringFilter<"Trade"> | string
+    coinPrice?: BigIntFilter<"Trade"> | bigint | number
     transactionId?: StringFilter<"Trade"> | string
     createdAt?: DateTimeFilter<"Trade"> | Date | string
     updatedAt?: DateTimeFilter<"Trade"> | Date | string
@@ -4478,6 +4516,7 @@ export namespace Prisma {
     isBuy?: SortOrder
     account?: SortOrder
     coinId?: SortOrder
+    coinPrice?: SortOrder
     transactionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -4494,6 +4533,7 @@ export namespace Prisma {
     isBuy?: BoolFilter<"Trade"> | boolean
     account?: StringFilter<"Trade"> | string
     coinId?: StringFilter<"Trade"> | string
+    coinPrice?: BigIntFilter<"Trade"> | bigint | number
     transactionId?: StringFilter<"Trade"> | string
     createdAt?: DateTimeFilter<"Trade"> | Date | string
     updatedAt?: DateTimeFilter<"Trade"> | Date | string
@@ -4507,6 +4547,7 @@ export namespace Prisma {
     isBuy?: SortOrder
     account?: SortOrder
     coinId?: SortOrder
+    coinPrice?: SortOrder
     transactionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -4527,6 +4568,7 @@ export namespace Prisma {
     isBuy?: BoolWithAggregatesFilter<"Trade"> | boolean
     account?: StringWithAggregatesFilter<"Trade"> | string
     coinId?: StringWithAggregatesFilter<"Trade"> | string
+    coinPrice?: BigIntWithAggregatesFilter<"Trade"> | bigint | number
     transactionId?: StringWithAggregatesFilter<"Trade"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Trade"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Trade"> | Date | string
@@ -4611,8 +4653,9 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
-    target?: number
+    target?: bigint | number
     status?: number
+    suiReserve?: bigint | number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -4637,8 +4680,9 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
-    target?: number
+    target?: bigint | number
     status?: number
+    suiReserve?: bigint | number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -4663,8 +4707,9 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
-    target?: IntFieldUpdateOperationsInput | number
+    target?: BigIntFieldUpdateOperationsInput | bigint | number
     status?: IntFieldUpdateOperationsInput | number
+    suiReserve?: BigIntFieldUpdateOperationsInput | bigint | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -4689,8 +4734,9 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
-    target?: IntFieldUpdateOperationsInput | number
+    target?: BigIntFieldUpdateOperationsInput | bigint | number
     status?: IntFieldUpdateOperationsInput | number
+    suiReserve?: BigIntFieldUpdateOperationsInput | bigint | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -4715,8 +4761,9 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
-    target?: number
+    target?: bigint | number
     status?: number
+    suiReserve?: bigint | number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -4739,8 +4786,9 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
-    target?: IntFieldUpdateOperationsInput | number
+    target?: BigIntFieldUpdateOperationsInput | bigint | number
     status?: IntFieldUpdateOperationsInput | number
+    suiReserve?: BigIntFieldUpdateOperationsInput | bigint | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -4763,8 +4811,9 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
-    target?: IntFieldUpdateOperationsInput | number
+    target?: BigIntFieldUpdateOperationsInput | bigint | number
     status?: IntFieldUpdateOperationsInput | number
+    suiReserve?: BigIntFieldUpdateOperationsInput | bigint | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -4775,6 +4824,7 @@ export namespace Prisma {
     coinAmount: bigint | number
     isBuy: boolean
     account: string
+    coinPrice: bigint | number
     transactionId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -4788,6 +4838,7 @@ export namespace Prisma {
     isBuy: boolean
     account: string
     coinId: string
+    coinPrice: bigint | number
     transactionId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -4798,6 +4849,7 @@ export namespace Prisma {
     coinAmount?: BigIntFieldUpdateOperationsInput | bigint | number
     isBuy?: BoolFieldUpdateOperationsInput | boolean
     account?: StringFieldUpdateOperationsInput | string
+    coinPrice?: BigIntFieldUpdateOperationsInput | bigint | number
     transactionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4811,6 +4863,7 @@ export namespace Prisma {
     isBuy?: BoolFieldUpdateOperationsInput | boolean
     account?: StringFieldUpdateOperationsInput | string
     coinId?: StringFieldUpdateOperationsInput | string
+    coinPrice?: BigIntFieldUpdateOperationsInput | bigint | number
     transactionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4823,6 +4876,7 @@ export namespace Prisma {
     isBuy: boolean
     account: string
     coinId: string
+    coinPrice: bigint | number
     transactionId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -4833,6 +4887,7 @@ export namespace Prisma {
     coinAmount?: BigIntFieldUpdateOperationsInput | bigint | number
     isBuy?: BoolFieldUpdateOperationsInput | boolean
     account?: StringFieldUpdateOperationsInput | string
+    coinPrice?: BigIntFieldUpdateOperationsInput | bigint | number
     transactionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4845,6 +4900,7 @@ export namespace Prisma {
     isBuy?: BoolFieldUpdateOperationsInput | boolean
     account?: StringFieldUpdateOperationsInput | string
     coinId?: StringFieldUpdateOperationsInput | string
+    coinPrice?: BigIntFieldUpdateOperationsInput | bigint | number
     transactionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4934,6 +4990,17 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type BigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[]
+    notIn?: bigint[] | number[]
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -4984,6 +5051,7 @@ export namespace Prisma {
     likes?: SortOrder
     target?: SortOrder
     status?: SortOrder
+    suiReserve?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -4994,6 +5062,7 @@ export namespace Prisma {
     likes?: SortOrder
     target?: SortOrder
     status?: SortOrder
+    suiReserve?: SortOrder
   }
 
   export type CoinMaxOrderByAggregateInput = {
@@ -5015,6 +5084,7 @@ export namespace Prisma {
     likes?: SortOrder
     target?: SortOrder
     status?: SortOrder
+    suiReserve?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -5039,6 +5109,7 @@ export namespace Prisma {
     likes?: SortOrder
     target?: SortOrder
     status?: SortOrder
+    suiReserve?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     signature?: SortOrder
@@ -5049,6 +5120,7 @@ export namespace Prisma {
     likes?: SortOrder
     target?: SortOrder
     status?: SortOrder
+    suiReserve?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -5084,6 +5156,22 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[]
+    notIn?: bigint[] | number[]
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -5096,17 +5184,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
-  export type BigIntFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[]
-    notIn?: bigint[] | number[]
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
   }
 
   export type BoolFilter<$PrismaModel = never> = {
@@ -5126,6 +5203,7 @@ export namespace Prisma {
     isBuy?: SortOrder
     account?: SortOrder
     coinId?: SortOrder
+    coinPrice?: SortOrder
     transactionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -5135,6 +5213,7 @@ export namespace Prisma {
     id?: SortOrder
     suiAmount?: SortOrder
     coinAmount?: SortOrder
+    coinPrice?: SortOrder
   }
 
   export type TradeMaxOrderByAggregateInput = {
@@ -5144,6 +5223,7 @@ export namespace Prisma {
     isBuy?: SortOrder
     account?: SortOrder
     coinId?: SortOrder
+    coinPrice?: SortOrder
     transactionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -5156,6 +5236,7 @@ export namespace Prisma {
     isBuy?: SortOrder
     account?: SortOrder
     coinId?: SortOrder
+    coinPrice?: SortOrder
     transactionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -5165,22 +5246,7 @@ export namespace Prisma {
     id?: SortOrder
     suiAmount?: SortOrder
     coinAmount?: SortOrder
-  }
-
-  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[]
-    notIn?: bigint[] | number[]
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedBigIntFilter<$PrismaModel>
-    _min?: NestedBigIntFilter<$PrismaModel>
-    _max?: NestedBigIntFilter<$PrismaModel>
+    coinPrice?: SortOrder
   }
 
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -5268,6 +5334,14 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type BigIntFieldUpdateOperationsInput = {
+    set?: bigint | number
+    increment?: bigint | number
+    decrement?: bigint | number
+    multiply?: bigint | number
+    divide?: bigint | number
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -5334,14 +5408,6 @@ export namespace Prisma {
     connect?: CoinWhereUniqueInput
   }
 
-  export type BigIntFieldUpdateOperationsInput = {
-    set?: bigint | number
-    increment?: bigint | number
-    decrement?: bigint | number
-    multiply?: bigint | number
-    divide?: bigint | number
-  }
-
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
   }
@@ -5391,6 +5457,17 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type NestedBigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[]
+    notIn?: bigint[] | number[]
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -5448,36 +5525,6 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[]
-    notIn?: Date[] | string[]
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedDateTimeFilter<$PrismaModel>
-    _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
-  export type NestedBigIntFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[]
-    notIn?: bigint[] | number[]
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
     in?: bigint[] | number[]
@@ -5494,6 +5541,25 @@ export namespace Prisma {
     _max?: NestedBigIntFilter<$PrismaModel>
   }
 
+  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
@@ -5507,6 +5573,7 @@ export namespace Prisma {
     coinAmount: bigint | number
     isBuy: boolean
     account: string
+    coinPrice: bigint | number
     transactionId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -5518,6 +5585,7 @@ export namespace Prisma {
     coinAmount: bigint | number
     isBuy: boolean
     account: string
+    coinPrice: bigint | number
     transactionId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -5582,6 +5650,7 @@ export namespace Prisma {
     isBuy?: BoolFilter<"Trade"> | boolean
     account?: StringFilter<"Trade"> | string
     coinId?: StringFilter<"Trade"> | string
+    coinPrice?: BigIntFilter<"Trade"> | bigint | number
     transactionId?: StringFilter<"Trade"> | string
     createdAt?: DateTimeFilter<"Trade"> | Date | string
     updatedAt?: DateTimeFilter<"Trade"> | Date | string
@@ -5632,8 +5701,9 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
-    target?: number
+    target?: bigint | number
     status?: number
+    suiReserve?: bigint | number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -5657,8 +5727,9 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
-    target?: number
+    target?: bigint | number
     status?: number
+    suiReserve?: bigint | number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -5698,8 +5769,9 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
-    target?: IntFieldUpdateOperationsInput | number
+    target?: BigIntFieldUpdateOperationsInput | bigint | number
     status?: IntFieldUpdateOperationsInput | number
+    suiReserve?: BigIntFieldUpdateOperationsInput | bigint | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -5723,8 +5795,9 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
-    target?: IntFieldUpdateOperationsInput | number
+    target?: BigIntFieldUpdateOperationsInput | bigint | number
     status?: IntFieldUpdateOperationsInput | number
+    suiReserve?: BigIntFieldUpdateOperationsInput | bigint | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -5748,8 +5821,9 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
-    target?: number
+    target?: bigint | number
     status?: number
+    suiReserve?: bigint | number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -5773,8 +5847,9 @@ export namespace Prisma {
     telegramUrl?: string
     whitepaperUrl?: string
     likes?: number
-    target?: number
+    target?: bigint | number
     status?: number
+    suiReserve?: bigint | number
     createdAt?: Date | string
     updatedAt?: Date | string
     signature?: string
@@ -5814,8 +5889,9 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
-    target?: IntFieldUpdateOperationsInput | number
+    target?: BigIntFieldUpdateOperationsInput | bigint | number
     status?: IntFieldUpdateOperationsInput | number
+    suiReserve?: BigIntFieldUpdateOperationsInput | bigint | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -5839,8 +5915,9 @@ export namespace Prisma {
     telegramUrl?: StringFieldUpdateOperationsInput | string
     whitepaperUrl?: StringFieldUpdateOperationsInput | string
     likes?: IntFieldUpdateOperationsInput | number
-    target?: IntFieldUpdateOperationsInput | number
+    target?: BigIntFieldUpdateOperationsInput | bigint | number
     status?: IntFieldUpdateOperationsInput | number
+    suiReserve?: BigIntFieldUpdateOperationsInput | bigint | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     signature?: StringFieldUpdateOperationsInput | string
@@ -5853,6 +5930,7 @@ export namespace Prisma {
     coinAmount: bigint | number
     isBuy: boolean
     account: string
+    coinPrice: bigint | number
     transactionId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -5871,6 +5949,7 @@ export namespace Prisma {
     coinAmount?: BigIntFieldUpdateOperationsInput | bigint | number
     isBuy?: BoolFieldUpdateOperationsInput | boolean
     account?: StringFieldUpdateOperationsInput | string
+    coinPrice?: BigIntFieldUpdateOperationsInput | bigint | number
     transactionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -5882,6 +5961,7 @@ export namespace Prisma {
     coinAmount?: BigIntFieldUpdateOperationsInput | bigint | number
     isBuy?: BoolFieldUpdateOperationsInput | boolean
     account?: StringFieldUpdateOperationsInput | string
+    coinPrice?: BigIntFieldUpdateOperationsInput | bigint | number
     transactionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -5893,6 +5973,7 @@ export namespace Prisma {
     coinAmount?: BigIntFieldUpdateOperationsInput | bigint | number
     isBuy?: BoolFieldUpdateOperationsInput | boolean
     account?: StringFieldUpdateOperationsInput | string
+    coinPrice?: BigIntFieldUpdateOperationsInput | bigint | number
     transactionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

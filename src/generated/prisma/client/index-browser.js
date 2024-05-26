@@ -135,6 +135,7 @@ exports.Prisma.CoinScalarFieldEnum = {
   likes: 'likes',
   target: 'target',
   status: 'status',
+  suiReserve: 'suiReserve',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   signature: 'signature'
@@ -147,6 +148,7 @@ exports.Prisma.TradeScalarFieldEnum = {
   isBuy: 'isBuy',
   account: 'account',
   coinId: 'coinId',
+  coinPrice: 'coinPrice',
   transactionId: 'transactionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
