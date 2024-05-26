@@ -33,19 +33,63 @@ function isStringArray(arr: any[]): arr is string[] {
 
 const router = express.Router()
 router.get("/top_coins", async (req, res) => {
-    // TODO: hottest coin & Imminent
+    let hottest = undefined;
     let newest = await prisma.coin.findFirst({
         orderBy: {
             createdAt: 'desc'
         }
     });
 
+
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setDate(twentyFourHoursAgo.getDate() - 1);
+
+    const aggregateTradingVolume = await prisma.trade.groupBy({
+        by: ['coinId'],
+        where: {
+            createdAt: {
+                gte: twentyFourHoursAgo,
+            },
+        },
+        _sum: {
+            suiAmount: true
+        },
+        orderBy: {
+            _sum: {
+                suiAmount: 'desc',
+            },
+        },
+        take: 1,
+    });
+
+    if(aggregateTradingVolume.length > 0) {
+        const coinId = aggregateTradingVolume[0].coinId;
+        hottest = await prisma.coin.findFirst({
+            where: {
+                packageId: coinId,
+            },
+        });
+    }
+
+    let imminent = await prisma.coin.findFirst({
+        where: {
+            suiReserve: {
+              lt: prisma.coin.fields.target,
+            },
+          },
+          orderBy: {
+            suiReserve: 'desc', // Order by suiReserve descending
+          },
+    });
+
     res.json({
         newest,
-        hottest: newest,
-        imminent: newest,
+        hottest: hottest || newest,
+        imminent: imminent,
     })
 });
+
+type SortOrder = 'asc' | 'desc';
 
 router.get("/coins", async (req, res) => {
     try {
@@ -85,47 +129,91 @@ router.get("/coins", async (req, res) => {
     }
 });
 
+const searchCoinsSchema = Joi.object({
+    order: Joi.string().valid('asc', 'desc').optional(),
+    sort: Joi.string().valid('created', 'marketCap', 'tvl').optional(),
+    term: Joi.string().allow('').optional(),
+});
 router.get("/coins/search", async (req, res) => {
     // TODO: fix later
     res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    const validation = searchCoinsSchema.validate(req.query);
+
+    if (validation.error) {
+        return res.status(400).send(validation.error.details[0].message);
+    }
 
     let sortBy = 'createdAt';
-    let order = req.query.order as string;
+    let order: SortOrder = (req.query.order === 'asc' || req.query.order === 'desc') ? req.query.order : 'desc';
     let sort = req.query.sort;
     let term = req.query.term as string;
-    let whereClause;
-
-    if (term) {
-        whereClause = {
-            OR: [
-                {
-                    name: {
-                        contains: term,
-                        //   mode: 'sensitive',
-                    },
-                },
-                {
-                    symbol: {
-                        startsWith: term,
-                        // mode: 'insensitive',
-                    },
-                },
-            ],
-        };
-    }
-
-    // TODO: implement other filters
-    // "created" | "marketCap" | "tvl" | "price"
-    if (sort === 'marketCap') {
-        // implement sortBy=
-    }
-
-    // set order to default if invalid value
-    if (!["asc", "desc"].includes(order)) {
-        order = "desc";
-    }
-
+    let whereClause = {};
     try {
+        if (term) {
+            whereClause = {
+                OR: [
+                    {
+                        name: {
+                            contains: term,
+                            //   mode: 'sensitive',
+                        },
+                    },
+                    {
+                        symbol: {
+                            startsWith: term,
+                            // mode: 'insensitive',
+                        },
+                    },
+                ],
+            };
+        }
+
+        if (sort === 'marketCap') {
+            sortBy = 'suiReserve';
+        }
+
+        if (sort === 'tvl') {
+            const twentyFourHoursAgo = new Date();
+            twentyFourHoursAgo.setDate(twentyFourHoursAgo.getDate() - 1);
+
+            const aggregateTradingVolume = await prisma.trade.groupBy({
+                by: ['coinId'],
+                where: {
+                    createdAt: {
+                        gte: twentyFourHoursAgo,
+                    },
+                    coin: {
+                        ...whereClause,
+                    }
+                },
+                _sum: {
+                    suiAmount: true
+                },
+                orderBy: {
+                    _sum: {
+                        suiAmount: order,
+                    },
+                }
+            });
+
+            const coinIds = aggregateTradingVolume.map(trade => trade.coinId);
+
+            const coins = await prisma.coin.findMany({
+                where: {
+                    packageId: {
+                        in: coinIds,
+                    },
+                },
+            });
+
+            const coinMap = new Map(coins.map(coin => [coin.packageId, coin]));
+            const sortedCoins = coinIds.map(id => coinMap.get(id));
+
+            res.json(sortedCoins);
+
+            return;
+        }
+
         let coins = await prisma.coin.findMany({
             where: whereClause,
             orderBy: {

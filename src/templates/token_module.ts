@@ -2,7 +2,7 @@ import handlebars from 'handlebars';
 
 export const tokenTemplate =
   handlebars.compile(`
-  /// Example custom coin. The backend uses this as a template
+/// Example custom coin. The backend uses this as a template
 #[allow(duplicate_alias)]
 module we_hate_the_ui_contracts::{{name_snake_case}} {
     use std::option;
@@ -33,7 +33,7 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
     const PRICE_INCREASE_PER_COIN: u64 = 1; // INCREASE PRICE BY ONE MIST PER COIN MINTED
     const INITIAL_COIN_PRICE: u64 = 1_000; // 0.000001 SUI
 
-   const STATUS_STARTING_UP: u64 = 0;
+    const STATUS_STARTING_UP: u64 = 0;
     const STATUS_OPEN: u64 = 1;
     const STATUS_CLOSE_PENDING: u64 = 2;
     const STATUS_CLOSED: u64 = 3;
@@ -63,6 +63,9 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         is_buy: bool,
         sui_amount: u64,
         coin_amount: u64,
+        coin_price: u64,
+        total_sui_reserve: u64,
+        total_supply: u64,
         account: address
     }
     public struct CoinStatusChangedEvent has copy, drop {
@@ -151,13 +154,16 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
             is_buy: true,
             sui_amount: payment_amount,
             coin_amount: mintAmount,
+            coin_price: get_coin_price(self),
+            total_sui_reserve: self.sui_coin_amount.value(),
+            total_supply: coin::total_supply(&self.treasury),
             account: ctx.sender()
         });
     }
 
     //TODO Later remove the below and return coin for PTB
     #[allow(lint(self_transfer))]
-     public fun sell_coins(
+    public fun sell_coins(
         self: &mut {{name_capital_camel_case}}Store, payment: Coin<{{name_snake_case_caps}}>, ctx: &mut TxContext
     ){
         assert!(self.status == STATUS_OPEN, ETokenNotOpenForBuySell);
@@ -173,6 +179,9 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
             is_buy: false,
             sui_amount: returnSui.value(),
             coin_amount: burnAmount,
+            coin_price: get_coin_price(self),
+            total_sui_reserve: self.sui_coin_amount.value(),
+            total_supply: coin::total_supply(&self.treasury),
             account: ctx.sender()
         });
 
@@ -270,7 +279,7 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
     #[test_only] use sui::test_utils;
     #[test]
     fun test_buy_price() {
-          // Initialize a mock sender address
+        // Initialize a mock sender address
         let addr1 = @0xA;
         let creator = @0xB;
         // Begins a multi-transaction scenario with addr1 as the sender
@@ -282,14 +291,14 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         };
 
 
-        
+
         // Set critical metadata first
         test_scenario::next_tx(&mut scenario, addr1);
         {
             let mut coinExampleStore = test_scenario::take_shared<{{name_capital_camel_case}}Store>(&scenario);
             let mut adminCap = test_scenario::take_from_sender<SetCriticalMetadataCap>(&scenario);
-            
-            assert!(coinExampleStore.status == STATUS_STARTING_UP);
+
+            test_utils::assert_eq<u64>(coinExampleStore.status, STATUS_STARTING_UP);
             set_critical_metadata(&mut coinExampleStore, &mut adminCap, 10_000_000, creator); //One sui target, buy below will go over
             test_utils::assert_eq<u64>(coinExampleStore.status, STATUS_OPEN);
             test_utils::assert_eq<u64>(coinExampleStore.target, 10_000_000);
@@ -303,17 +312,17 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         {
             let mut coinExampleStore = test_scenario::take_shared<{{name_capital_camel_case}}Store>(&scenario);
             let adminCap = test_scenario::take_from_sender<SetCriticalMetadataCap>(&scenario);
-        
+
             test_utils::assert_eq<u64>(get_coin_price(&coinExampleStore), 1_000);
             let buy1Price = get_coin_buy_price(&coinExampleStore, 1_000);
             debug::print(&string::utf8(b"buy1price"));
             debug::print(&buy1Price);
             test_utils::assert_eq<u64>(buy1Price, 1_500_500);
             let buy1coin = coin::mint_for_testing<SUI>(buy1Price, test_scenario::ctx(&mut scenario));
-            
+
             buy_coins(&mut coinExampleStore, buy1coin, 1_000, test_scenario::ctx(&mut scenario));
             test_utils::assert_eq<u64>(coinExampleStore.status, STATUS_OPEN); //We haven't hit target, so we're still open
-                
+
 
             let buy100Price = get_coin_buy_price(&coinExampleStore, 100_000);
             debug::print(&string::utf8(b"buy100price"));
@@ -348,8 +357,8 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
             init({{name_snake_case_caps}} {}, scenario.ctx());
         };
 
-      test_scenario::next_tx(&mut scenario, addr1);
-      {
+    test_scenario::next_tx(&mut scenario, addr1);
+    {
         let mut coinExampleStore = test_scenario::take_shared<{{name_capital_camel_case}}Store>(&scenario);
 
         set_coin_social_metadata(&mut coinExampleStore, string::utf8(b"telegram_url"), string::utf8(b"discord_url"), string::utf8(b"twitter_url"), string::utf8(b"website_url"), scenario.ctx());
@@ -360,12 +369,11 @@ module we_hate_the_ui_contracts::{{name_snake_case}} {
         test_utils::assert_eq<String>(coinExampleStore.website_url, string::utf8(b"website_url"));
 
         test_scenario::return_shared<{{name_capital_camel_case}}Store>(coinExampleStore);
-      };
+    };
 
         scenario.end();
     }
 }
-
 `);
 
 export const moveTomlTemplate = handlebars.compile(`
