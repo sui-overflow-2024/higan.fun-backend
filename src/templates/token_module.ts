@@ -60,6 +60,9 @@ export const tokenTemplate =
         is_buy: bool,
         sui_amount: u64,
         coin_amount: u64,
+        coin_price: u64,
+        total_sui_reserve: u64,
+        total_supply: u64,
         account: address
     }
     public struct CoinStatusChangedEvent has copy, drop {
@@ -143,6 +146,9 @@ export const tokenTemplate =
             is_buy: true,
             sui_amount: payment_amount,
             coin_amount: mintAmount,
+            coin_price: get_coin_price(self),
+            total_sui_reserve: self.sui_coin_amount.value(),
+            total_supply: coin::total_supply(&self.treasury),
             account: ctx.sender()
         });
     }
@@ -165,6 +171,9 @@ export const tokenTemplate =
             is_buy: false,
             sui_amount: returnSui.value(),
             coin_amount: burnAmount,
+            coin_price: get_coin_price(self),
+            total_sui_reserve: self.sui_coin_amount.value(),
+            total_supply: coin::total_supply(&self.treasury),
             account: ctx.sender()
         });
 
@@ -176,7 +185,7 @@ export const tokenTemplate =
         self.sui_coin_amount.value()
     }
 
-    // Returns current price of the token based on the bonding curve
+    // Returns current price of 1 token based on the bonding curve
     public fun get_coin_price(self: &{{name_capital_camel_case}}Store): u64 {
         let total_supply: u64 = coin::total_supply(&self.treasury);
 
@@ -265,6 +274,9 @@ export const tokenTemplate =
 
      
 }
+
+}
+
 `);
 
 export const moveTomlTemplate = handlebars.compile(`

@@ -42,9 +42,10 @@ model Coin {
   telegramUrl   String   @default("")
   whitepaperUrl String   @default("")
   likes         Int      @default(0)
-  target        Int @default(0)
+  target        BigInt @default(0)
   status        Int @default(0) //TODO this should be an enum type when we swap to postgres or mongo connector. Enum commented above
   trades        Trade[]
+  suiReserve    BigInt @default(0)
   // creatorUser   User     @relation(fields: [creator], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -60,6 +61,7 @@ model Trade {
   account       String
   coinId        String
   coin          Coin     @relation(fields: [coinId], references: [packageId])
+  coinPrice     BigInt
   transactionId String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

@@ -2,6 +2,16 @@ import {WebSocket} from "ws";
 import {getFullnodeUrl, SuiClient, SuiHTTPTransport} from "@mysten/sui.js/client";
 import { PrismaClient } from "./generated/prisma/client";
 
+
+// hack to serialize to json
+declare global {
+    interface BigInt {
+      toJSON: () => string;
+    }
+  }
+
+BigInt.prototype.toJSON = function() { return this.toString() }
+
 export const network = process.env.NETWORK || "localnet";
 if (network !== "localnet" && network !== "testnet" && network !== "mainnet" && network !== "devnet") {
     throw new Error(`Invalid network: ${network}. Please use localnet, testnet, mainnet, or devnet`);
