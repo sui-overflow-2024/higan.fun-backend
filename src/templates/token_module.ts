@@ -185,7 +185,11 @@ export const tokenTemplate =
         self.sui_coin_amount.value()
     }
 
-    // Returns current price of 1 token based on the bonding curve
+    public fun get_coin_total_supply(self: &{{name_capital_camel_case}}Store): u64 {
+        coin::total_supply(&self.treasury)
+    }
+
+    // Returns current price of the token based on the bonding curve
     public fun get_coin_price(self: &{{name_capital_camel_case}}Store): u64 {
         let total_supply: u64 = coin::total_supply(&self.treasury);
 
@@ -272,8 +276,6 @@ export const tokenTemplate =
         debug::print(self)
     }
 
-     
-}
 
 }
 
