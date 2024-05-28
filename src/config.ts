@@ -18,11 +18,12 @@ if (network !== "localnet" && network !== "testnet" && network !== "mainnet" && 
 }
 
 export const rpcUrl = getFullnodeUrl(network);
-console.log("Using network: ", network, " with RPC URL: ", rpcUrl);
+console.log("Using network: ", network, " with RPC URL: ", process.env.RPC_URL || rpcUrl);
 
 export const client = new SuiClient({
     transport: new SuiHTTPTransport({
-        url: 'https://sui-testnet.nodeinfra.com/?apikey=hackathon',
+        url: process.env.RPC_URL || rpcUrl,
+        // url: 'https://sui-testnet.nodeinfra.com/?apikey=hackathon',
         // The typescript definitions may not match perfectly, casting to never avoids these minor incompatibilities
         WebSocketConstructor: WebSocket as never,
     }),

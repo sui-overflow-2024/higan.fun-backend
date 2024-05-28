@@ -50,6 +50,8 @@ WORKDIR /app
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+COPY --from=sui-binary /tmp/sui/* /usr/local/bin/
+
 # Copy the dependencies from the previous build stage
 COPY --from=base /app/node_modules /app/node_modules
 
@@ -60,7 +62,6 @@ COPY --from=base /app/dist /app/dist
 COPY --from=base /app/prisma/ /app/prisma/
 
 # Copy the prebuilt Sui binaries
-COPY --from=sui-binary /tmp/sui/* /usr/local/bin/
 ENV PATH="/usr/local/sui/bin:${PATH}"
 
 EXPOSE 3000
