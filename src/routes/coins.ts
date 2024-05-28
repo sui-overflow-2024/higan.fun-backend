@@ -264,6 +264,38 @@ router.get('/coins/:id/trades', async (req, res) => {
     }
 });
 
+interface AccountTokens {
+    account: string;
+    totalTokens: number;
+}
+
+router.get('/coins/:id/holders', async (req, res) => {
+    const {id} = req.params;
+    try {
+        const result : AccountTokens[] = await prisma.$queryRaw`
+        SELECT
+          account,
+          SUM(CASE WHEN "isBuy" THEN "coinAmount" ELSE -"coinAmount" END) AS totalTokens
+        FROM
+          "Trade"
+        WHERE
+          "coinId" = ${id}
+        GROUP BY
+          account;
+      `;
+
+        // const holders = result.map(row => ({
+        //     account: row.account,
+        //     totalTokens: row.totaltokens.toString(), // Convert bigint to string if required
+        // }));
+
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "Internal server error"});
+    }
+});
+
 const postCoinSchema = Joi.object({
     decimals: Joi.number().required(),
     name: Joi.string().required().regex(/^[A-Za-z0-9 ]+$/),

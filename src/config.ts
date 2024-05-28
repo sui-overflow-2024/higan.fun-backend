@@ -22,7 +22,7 @@ console.log("Using network: ", network, " with RPC URL: ", rpcUrl);
 
 export const client = new SuiClient({
     transport: new SuiHTTPTransport({
-        url: rpcUrl,
+        url: 'https://sui-testnet.nodeinfra.com/?apikey=hackathon',
         // The typescript definitions may not match perfectly, casting to never avoids these minor incompatibilities
         WebSocketConstructor: WebSocket as never,
     }),
