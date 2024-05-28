@@ -21,17 +21,17 @@ const threadSchema = Joi.object({
 // Get All Threads
 router.get('/post', async (req: Request, res: Response) => {
     const threads = await prisma.post.findMany();
-    res.json(threads);
+    return res.json(threads);
 });
 
 // Get Single Thread
 router.get('/post/:id', async (req: Request<{ id: number }>, res: Response) => {
     const thread = await prisma.post.findFirst({where: {id: req.params.id}})
-    res.json(thread);
+    return res.json(thread);
 });
 
 router.get('/coin/:coinId/posts', async (req, res) => {
-    let { coinId } = req.params;
+    let {coinId} = req.params;
 
     const threads = await prisma.post.findMany({
         where: {
@@ -40,9 +40,9 @@ router.get('/coin/:coinId/posts', async (req, res) => {
         orderBy: {
             createdAt: 'desc'
         }
-    }, );
+    },);
 
-    res.json(threads);
+    return res.json(threads);
 });
 
 router.post('/post', async (req: Request<{}, any, ThreadPostRequest>, res: Response) => {
@@ -68,7 +68,8 @@ router.post('/post', async (req: Request<{}, any, ThreadPostRequest>, res: Respo
                 authorId: req.body.author || "",
             }
         });
-        res.json(newThread);
+        console.log("created thread", newThread);
+        return res.json(newThread);
     }
 );
 

@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    image: we-hate-the-ui-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+  frontend:
+   build: ../we-hate-the-ui
+   image: we-hate-the-ui
+   ports:
+     - "5000:5000"
+   env_file:
+     - ../we-hate-the-ui/.env
+   depends_on:
+     - backend
+  db:
+    ports:
+      - "5432:5432"
+    image: postgres:latest
+    container_name: postgres-db
+    env_file:
+      - .env
+    volumes:
+      - pgdata3:/var/lib/postgresql/data
+#  haproxy:
+#    image: haproxy:latest
+#    container_name: haproxy
+#    volumes:
+#      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+#      - /etc/letsencrypt/live/higan.fun/higan.fun.pem:/etc/haproxy/certs/higan.fun.pem
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    depends_on:
+#      - app
+volumes:
+  pgdata3:

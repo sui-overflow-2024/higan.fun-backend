@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.env*
+dev.db*
+.idea
+.vscode
+we-hate-the-ui-backend-snapshot.tar

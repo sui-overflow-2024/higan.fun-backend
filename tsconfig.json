@@ -2,10 +2,11 @@
   "compilerOptions": {
     "sourceMap": true,
     "outDir": "dist",
-       "target": "esnext",
+    "target": "esnext",
     "module": "commonjs",
     "strict": true,
-    "lib": ["esnext"],
+    "lib": ["esnext", "dom"], // Add "dom" to the lib array
+    "types": ["node"],
     "esModuleInterop": true
   }
 }

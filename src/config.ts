@@ -12,7 +12,7 @@ declare global {
 
 BigInt.prototype.toJSON = function() { return this.toString() }
 
-export const network = process.env.NETWORK || "localnet";
+export const network = process.env.NEXT_PUBLIC_NETWORK || "testnet";
 if (network !== "localnet" && network !== "testnet" && network !== "mainnet" && network !== "devnet") {
     throw new Error(`Invalid network: ${network}. Please use localnet, testnet, mainnet, or devnet`);
 }

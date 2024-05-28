@@ -93,8 +93,6 @@ type SortOrder = 'asc' | 'desc';
 
 router.get("/coins", async (req, res) => {
     try {
-        res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-
         let packageIds: string[] = [];
         let packageIdsRaw = req.query.packageIds;
 
@@ -136,7 +134,6 @@ const searchCoinsSchema = Joi.object({
 });
 router.get("/coins/search", async (req, res) => {
     // TODO: fix later
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
     const validation = searchCoinsSchema.validate(req.query);
 
     if (validation.error) {

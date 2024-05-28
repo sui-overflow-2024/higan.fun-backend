@@ -4,3 +4,5 @@ dist/
 dev.db*
 .idea
 .vscode
+we-hate-the-ui-backend-snapshot.tar
+src/generated/prisma/
