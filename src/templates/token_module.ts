@@ -159,25 +159,25 @@ export const tokenTemplate =
         self: &mut {{name_capital_camel_case}}Store, payment: Coin<{{name_snake_case_caps}}>, ctx: &mut TxContext
     ){
         assert!(self.status == STATUS_OPEN, ETokenNotOpenForBuySell);
-        let burnAmount = coin::value(&payment);
-
+        let sellPrice = get_coin_sell_price(self, coin::value(&payment));
+        let coinAmountSold = coin::value(&payment);
         // Take sui from the balance of this contract
-        let returnSui = coin::take(&mut self.sui_coin_amount, burnAmount, ctx);
+        let returnSui = coin::take(&mut self.sui_coin_amount, sellPrice, ctx);
 
         coin::burn(&mut self.treasury, payment);
 
 
+        transfer::public_transfer(returnSui, ctx.sender());
+
         event::emit(SwapEvent {
             is_buy: false,
-            sui_amount: returnSui.value(),
-            coin_amount: burnAmount,
+            sui_amount: sellPrice,
+            coin_amount: coinAmountSold,
             coin_price: get_coin_price(self),
             total_sui_reserve: self.sui_coin_amount.value(),
             total_supply: coin::total_supply(&self.treasury),
             account: ctx.sender()
         });
-
-        transfer::public_transfer(returnSui, ctx.sender())
     }
 
 
@@ -276,8 +276,9 @@ export const tokenTemplate =
         debug::print(self)
     }
 
-
+    
 }
+
 
 `);
 
