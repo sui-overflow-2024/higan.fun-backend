@@ -15,6 +15,7 @@ services:
    image: we-hate-the-ui
    ports:
      - "5000:5000"
+   restart: always
    env_file:
      - ../we-hate-the-ui/.env
    depends_on:
@@ -24,6 +25,7 @@ services:
       - "5432:5432"
     image: postgres:latest
     container_name: postgres-db
+    restart: always
     env_file:
       - .env
     volumes:

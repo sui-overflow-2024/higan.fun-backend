@@ -32,7 +32,7 @@ function isStringArray(arr: any[]): arr is string[] {
 }
 
 const router = express.Router()
-router.get("/top_coins", async (req, res) => {
+router.get("/top_coins", async (_, res) => {
     let hottest = undefined;
     let newest = await prisma.coin.findFirst({
         orderBy: {
@@ -62,7 +62,7 @@ router.get("/top_coins", async (req, res) => {
         take: 1,
     });
 
-    if(aggregateTradingVolume.length > 0) {
+    if (aggregateTradingVolume.length > 0) {
         const coinId = aggregateTradingVolume[0].coinId;
         hottest = await prisma.coin.findFirst({
             where: {
@@ -74,12 +74,12 @@ router.get("/top_coins", async (req, res) => {
     let imminent = await prisma.coin.findFirst({
         where: {
             suiReserve: {
-              lt: prisma.coin.fields.target,
+                lt: prisma.coin.fields.target,
             },
-          },
-          orderBy: {
+        },
+        orderBy: {
             suiReserve: 'desc', // Order by suiReserve descending
-          },
+        },
     });
 
     res.json({
@@ -95,35 +95,33 @@ router.get("/coins", async (req, res) => {
     try {
         let packageIds: string[] = [];
         let packageIdsRaw = req.query.packageIds;
+        let creatorRaw = req.query.creator;
 
         if (typeof packageIdsRaw === "string") {
-            packageIds = [packageIdsRaw];
+            packageIds = packageIdsRaw.split(",");
         } else if (Array.isArray(packageIdsRaw) && isStringArray(packageIdsRaw)) {
             packageIds = packageIdsRaw;
         }
 
-        let coins;
-        if (packageIds && Array.isArray(packageIds) && packageIds.length) {
-            coins = await prisma.coin.findMany({
-                where: {
-                    packageId: {
-                        in: packageIds
-                    }
-                },
-                select: {
-                    packageId: true
-                }, orderBy: {
-                    packageId: "asc"
-                }
-            });
-        } else {
-            coins = await prisma.coin.findMany();
+        const whereArgs: any = {}
+        if (packageIds.length > 0) {
+            whereArgs["packageId"] = {
+                in: packageIds
+            }
+        }
+        if(creatorRaw) {
+            whereArgs["creator"] = creatorRaw;
         }
 
-        res.json(coins);
+        const coins = await prisma.coin.findMany({
+            where: whereArgs,
+        });
+
+
+        return res.json(coins);
     } catch (error) {
         console.error(error);
-        res.status(500).json({error: "Internal server error"});
+        return res.status(500).json({error: "Internal server error"});
     }
 });
 
@@ -272,21 +270,17 @@ interface AccountTokens {
 router.get('/coins/:id/holders', async (req, res) => {
     const {id} = req.params;
     try {
-        const result : AccountTokens[] = await prisma.$queryRaw`
-        SELECT
-          account,
-          SUM(CASE WHEN "isBuy" THEN "coinAmount" ELSE -"coinAmount" END) AS totalTokens
-        FROM
-          "Trade"
-        WHERE
-          "coinId" = ${id}
-        GROUP BY
-          account;
-      `;
+        const result: AccountTokens[] = await prisma.$queryRaw`
+            SELECT account,
+                   SUM(CASE WHEN "isBuy" THEN "coinAmount" ELSE -"coinAmount" END) AS totalTokens
+            FROM "Trade"
+            WHERE "coinId" = ${id}
+            GROUP BY account;
+        `;
 
         // const holders = result.map(row => ({
         //     account: row.account,
-        //     totalTokens: row.totaltokens.toString(), // Convert bigint to string if required
+        //     totalTokens: row.totalTokens.toString(), // Convert bigint to string if required
         // }));
 
         res.json(result);
@@ -409,7 +403,7 @@ router.post("/coins", async (req, res) => {
                     showObjectChanges: true,
                 },
             });
-            const storeObjectTypeRegex = /^0x[0-9a-f]{64}::[\w]+::[\w]+Store$/;
+            const storeObjectTypeRegex = /^0x[0-9a-f]{64}::\w+::\w+Store$/;
             const critMetaObjectTypeRegex = /^.*SetCriticalMetadataCap$/; //TODO Regex is sloppy
             //@ts-ignore-next-line
             const publishedPackageId = response.objectChanges?.find(change => change.type === 'published')?.packageId;
