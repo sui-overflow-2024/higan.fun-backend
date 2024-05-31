@@ -267,21 +267,20 @@ interface AccountTokens {
     totalTokens: number;
 }
 
-router.get('/coins/:id/holders', async (req, res) => {
+router.get('/coin/:id/holders', async (req, res) => {
     const {id} = req.params;
     try {
-        const result: AccountTokens[] = await prisma.$queryRaw`
-            SELECT account,
-                   SUM(CASE WHEN "isBuy" THEN "coinAmount" ELSE -"coinAmount" END) AS totalTokens
-            FROM "Trade"
-            WHERE "coinId" = ${id}
-            GROUP BY account;
-        `;
-
-        // const holders = result.map(row => ({
-        //     account: row.account,
-        //     totalTokens: row.totalTokens.toString(), // Convert bigint to string if required
-        // }));
+        const result : AccountTokens[] = await prisma.$queryRaw`
+        SELECT
+          account as address,
+          SUM(CASE WHEN "isBuy" THEN "coinAmount" ELSE -"coinAmount" END) AS balance
+        FROM
+          "Trade"
+        WHERE
+          "coinId" = ${id}
+        GROUP BY
+          account;
+      `;
 
         res.json(result);
     } catch (error) {
