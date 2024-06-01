@@ -5,7 +5,7 @@ import crypto from "crypto";
 import os from "os";
 import path from "path";
 import fs from "fs";
-import {client, prisma} from "../config";
+import {client, prisma, managerContract} from "../config";
 import express from "express";
 import {Ed25519Keypair} from "@mysten/sui.js/keypairs/ed25519";
 import {verifyPersonalMessage} from '@mysten/sui.js/verify';
@@ -371,6 +371,7 @@ router.post("/coins", async (req, res) => {
             console.log('stdout: ' + stdout);
             console.log("error" + error);
             console.log("stderr" + stderr);
+
             if (error !== null) {
                 console.log('exec error: ' + error);
                 res.status(500).json({error: "Internal server error"});
@@ -402,18 +403,51 @@ router.post("/coins", async (req, res) => {
                     showObjectChanges: true,
                 },
             });
-            const storeObjectTypeRegex = /^0x[0-9a-f]{64}::\w+::\w+Store$/;
-            const critMetaObjectTypeRegex = /^.*SetCriticalMetadataCap$/; //TODO Regex is sloppy
             //@ts-ignore-next-line
             const publishedPackageId = response.objectChanges?.find(change => change.type === 'published')?.packageId;
             //@ts-ignore-next-line
-            const storeObjectId = response.objectChanges?.find(change => change.type === "created" && storeObjectTypeRegex.test(change.objectType))?.objectId;
+            // const storeObjectId = response.objectChanges?.find(change => change.type === "created" && storeObjectTypeRegex.test(change.objectType))?.objectId;
+            const coinType = `${publishedPackageId}::${templateData.name_snake_case}::${templateData.name_snake_case_caps}`;
+            const treasuryCapType = `0x2::coin::TreasuryCap<${coinType}>`
             //@ts-ignore-next-line
-            const critMetaObjectId = response.objectChanges?.find(change => change.type === "created" && critMetaObjectTypeRegex.test(change.objectType))?.objectId;
+            const treasuryCapObjectId = response.objectChanges?.find(change => change.type === "created" && change.objectType == treasuryCapType)?.objectId;
+            //@ts-ignore-next-line
 
             fs.rmSync(uniqueDir, {recursive: true, force: true});
 
-            console.log(response);
+            const listCoinTx = new TransactionBlock();
+            listCoinTx.setSenderIfNotSet(keypair.getPublicKey().toSuiAddress());
+            listCoinTx.moveCall({
+                target: `${managerContract.packageId}::${managerContract.moduleName}::list`,
+                arguments: [
+                    listCoinTx.object(managerContract.adminCap),
+                    listCoinTx.object(treasuryCapObjectId),
+                    listCoinTx.pure(publicKey.toSuiAddress()),
+                ],
+                typeArguments: [`${publishedPackageId}::${templateData.name_snake_case}::${templateData.name_snake_case_caps}`]
+            });
+            const listCoinResponse = await client.signAndExecuteTransactionBlock({
+                signer: keypair,
+                transactionBlock: listCoinTx,
+                options: {
+                    showBalanceChanges: true,
+                    showEffects: true,
+                    showEvents: true,
+                    showInput: true,
+                    showObjectChanges: true,
+                },
+            });
+
+            const bondingCurveType = `${managerContract.packageId}::${managerContract.moduleName}::BondingCurve<${coinType}>`;
+            //@ts-ignore-next-line
+            const storeObjectId = listCoinResponse.objectChanges?.find(change => change.type === "created" && change.objectType == bondingCurveType)?.objectId;
+
+            if(storeObjectId === undefined) {
+                return res.status(500).json({error: "Internal server error, BondingCurve not found"});
+            }
+
+            console.log(listCoinResponse)
+
             const coin = await prisma.coin.create({
                 data: {
                     packageId: publishedPackageId,
@@ -435,41 +469,6 @@ router.post("/coins", async (req, res) => {
                 },
             });
 
-            const setCreatorTx = new TransactionBlock();
-
-            console.log(response.objectChanges?.find((change) => {
-                //@ts-ignore-next-line
-                console.log(change.objectType)
-                //@ts-ignore-next-line
-                console.log(critMetaObjectTypeRegex.test(change.objectType))
-                //@ts-ignore-next-line
-                return change.type === "created" && critMetaObjectTypeRegex.test(change.objectType)
-            }));
-            console.log(response.objectChanges?.find(change => change.type === "created"));
-
-            console.log(storeObjectId, critMetaObjectId, target, publicKey.toSuiAddress());
-            setCreatorTx.setSenderIfNotSet(keypair.getPublicKey().toSuiAddress());
-            setCreatorTx.moveCall({
-                target: `${publishedPackageId}::${toSnakeCase(name)}::set_critical_metadata`,
-                arguments: [
-                    setCreatorTx.object(storeObjectId),
-                    setCreatorTx.object(critMetaObjectId),
-                    setCreatorTx.pure.u64(target),
-                    setCreatorTx.pure.address(publicKey.toSuiAddress()),
-                ],
-            })
-            const setCreatorResponse = await client.signAndExecuteTransactionBlock({
-                signer: keypair,
-                transactionBlock: setCreatorTx,
-                options: {
-                    showBalanceChanges: true,
-                    showEffects: true,
-                    showEvents: true,
-                    showInput: true,
-                    showObjectChanges: true,
-                },
-            });
-            console.log("setCreatorResponse", setCreatorResponse);
             return res.json(coin);
         })
 

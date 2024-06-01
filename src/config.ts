@@ -17,6 +17,18 @@ if (network !== "localnet" && network !== "testnet" && network !== "mainnet" && 
     throw new Error(`Invalid network: ${network}. Please use localnet, testnet, mainnet, or devnet`);
 }
 
+const {MANAGER_CONTRACT_PACKAGE_ID,MANAGER_CONTRACT_MODULE_NAME,MANAGER_CONTRACT_ADMIN_CAP_ID} = process.env;
+
+if (!MANAGER_CONTRACT_PACKAGE_ID || !MANAGER_CONTRACT_MODULE_NAME || !MANAGER_CONTRACT_ADMIN_CAP_ID) {
+  throw new Error("Manager contract package id, module name, and admin cap object id must be set")
+}
+
+export const managerContract = {
+  packageId: MANAGER_CONTRACT_PACKAGE_ID,
+  moduleName: MANAGER_CONTRACT_MODULE_NAME,
+  adminCap: MANAGER_CONTRACT_ADMIN_CAP_ID,
+}
+
 export const rpcUrl = getFullnodeUrl(network);
 console.log("Using network: ", network, " with RPC URL: ", process.env.RPC_URL || rpcUrl);
 
