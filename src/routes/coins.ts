@@ -1,31 +1,20 @@
 // Type guard to check if an array consists only of strings
-import {toPascalCase, toSnakeCase, toSnakeCaseUpper} from "../lib";
+import {toPascalCase, toSnakeCase} from "../lib";
 import {moveTomlTemplate, tokenTemplate} from "../templates/token_module";
 import crypto from "crypto";
 import os from "os";
 import path from "path";
 import fs from "fs";
-import {client, prisma, managerContract} from "../config";
+import {client, config, prisma} from "../config";
 import express from "express";
-import {Ed25519Keypair} from "@mysten/sui.js/keypairs/ed25519";
 import {verifyPersonalMessage} from '@mysten/sui.js/verify';
 
 import {TransactionBlock} from "@mysten/sui.js/transactions";
 import Joi from "joi";
+import {CoinStatus} from "../types";
 
 const exec = require('child_process').exec;
 
-const keypair = Ed25519Keypair.deriveKeypair(
-    process.env.TEST_MNEMONICS || process.env.PRIVATE_KEY_MNEMONIC || "", //different devs w/ different naming, converge on PRIVATE_KEY_MNEMONIC later
-    "m/44'/784'/0'/0'/0'"
-);
-
-enum CoinStatus {
-    STARTING_UP = 0,
-    ACTIVE = 1,
-    CLOSE_PENDING = 2,
-    CLOSED = 3,
-}
 
 function isStringArray(arr: any[]): arr is string[] {
     return arr.every(item => typeof item === 'string');
@@ -109,7 +98,7 @@ router.get("/coins", async (req, res) => {
                 in: packageIds
             }
         }
-        if(creatorRaw) {
+        if (creatorRaw) {
             whereArgs["creator"] = creatorRaw;
         }
 
@@ -227,7 +216,7 @@ router.get("/coins/:id", async (req, res) => {
     const {id} = req.params;
     try {
         const coin = await prisma.coin.findUnique({
-            where: {packageId: id},
+            where: {bondingCurveId: id},
         });
         if (coin) {
             res.json(coin);
@@ -270,17 +259,13 @@ interface AccountTokens {
 router.get('/coin/:id/holders', async (req, res) => {
     const {id} = req.params;
     try {
-        const result : AccountTokens[] = await prisma.$queryRaw`
-        SELECT
-          account as address,
-          SUM(CASE WHEN "isBuy" THEN "coinAmount" ELSE -"coinAmount" END) AS balance
-        FROM
-          "Trade"
-        WHERE
-          "coinId" = ${id}
-        GROUP BY
-          account;
-      `;
+        const result: AccountTokens[] = await prisma.$queryRaw`
+            SELECT account                                                         as address,
+                   SUM(CASE WHEN "isBuy" THEN "coinAmount" ELSE -"coinAmount" END) AS balance
+            FROM "Trade"
+            WHERE "coinId" = ${id}
+            GROUP BY account;
+        `;
 
         res.json(result);
     } catch (error) {
@@ -295,7 +280,7 @@ const postCoinSchema = Joi.object({
     symbol: Joi.string().required().regex(/^[A-Za-z0-9]+$/),
     description: Joi.string().required(),
     iconUrl: Joi.string().required(),
-    website: Joi.string().optional().allow(''),
+    websiteUrl: Joi.string().optional().allow(''),
     twitterUrl: Joi.string().optional().allow(''),
     discordUrl: Joi.string().optional().allow(''),
     telegramUrl: Joi.string().optional().allow(''),
@@ -309,6 +294,7 @@ router.post("/coins", async (req, res) => {
     if (validation.error) {
         return res.status(400).send(validation.error.details[0].message);
     }
+    const {keypair} = config;
 
     try {
         const {
@@ -317,7 +303,7 @@ router.post("/coins", async (req, res) => {
             symbol,
             description,
             iconUrl,
-            website,
+            websiteUrl,
             twitterUrl,
             discordUrl,
             telegramUrl,
@@ -336,7 +322,7 @@ router.post("/coins", async (req, res) => {
             coin_metadata_icon_url: iconUrl,
             coin_metadata_symbol: symbol,
             coin_metadata_description: description,
-            optional_metadata_website_url: website,
+            optional_metadata_website_url: websiteUrl,
             optional_metadata_twitter_url: twitterUrl,
             optional_metadata_discord_url: discordUrl,
             optional_metadata_telegram_url: telegramUrl,
@@ -374,22 +360,26 @@ router.post("/coins", async (req, res) => {
 
             if (error !== null) {
                 console.log('exec error: ' + error);
-                res.status(500).json({error: "Internal server error"});
+                return res.status(500).json({error: "Internal server error"});
             }
 
             const compiledModulesAndDependencies = JSON.parse(stdout);
             const tx = new TransactionBlock();
-            tx.setSenderIfNotSet(keypair.getPublicKey().toSuiAddress());
+            tx.setSenderIfNotSet(config.keypair.getPublicKey().toSuiAddress());
             const [upgradeCap] = tx.publish({
                 modules: compiledModulesAndDependencies.modules,
                 dependencies: compiledModulesAndDependencies.dependencies,
             });
-
+            // const res = tx.publish({
+            //     modules: compiledModulesAndDependencies.modules,
+            //     dependencies: compiledModulesAndDependencies.dependencies,
+            // });
+            //
+            // const upgradeCap = res[0];
             tx.transferObjects(
                 [upgradeCap],
-                tx.pure(keypair.getPublicKey().toSuiAddress())
+                tx.pure(config.keypair.getPublicKey().toSuiAddress())
             );
-
 
             console.log("signerAddress: " + keypair.toSuiAddress())
             const response = await client.signAndExecuteTransactionBlock({
@@ -418,9 +408,9 @@ router.post("/coins", async (req, res) => {
             const listCoinTx = new TransactionBlock();
             listCoinTx.setSenderIfNotSet(keypair.getPublicKey().toSuiAddress());
             listCoinTx.moveCall({
-                target: `${managerContract.packageId}::${managerContract.moduleName}::list`,
+                target: `${config.managementPackageId}::${config.managementModuleName}::list`,
                 arguments: [
-                    listCoinTx.object(managerContract.adminCap),
+                    listCoinTx.object(config.managementAdminCapId),
                     listCoinTx.object(treasuryCapObjectId),
                     listCoinTx.pure(publicKey.toSuiAddress()),
                 ],
@@ -438,11 +428,11 @@ router.post("/coins", async (req, res) => {
                 },
             });
 
-            const bondingCurveType = `${managerContract.packageId}::${managerContract.moduleName}::BondingCurve<${coinType}>`;
+            const bondingCurveType = `${config.managementPackageId}::${config.managementModuleName}::BondingCurve<${coinType}>`;
             //@ts-ignore-next-line
-            const storeObjectId = listCoinResponse.objectChanges?.find(change => change.type === "created" && change.objectType == bondingCurveType)?.objectId;
+            const bondingCurveId = listCoinResponse.objectChanges?.find(change => change.type === "created" && change.objectType == bondingCurveType)?.objectId;
 
-            if(storeObjectId === undefined) {
+            if (bondingCurveId === undefined) {
                 return res.status(500).json({error: "Internal server error, BondingCurve not found"});
             }
 
@@ -451,7 +441,7 @@ router.post("/coins", async (req, res) => {
             const coin = await prisma.coin.create({
                 data: {
                     packageId: publishedPackageId,
-                    storeId: storeObjectId,
+                    bondingCurveId: bondingCurveId,
                     module: toSnakeCase(name),
                     creator: publicKey.toSuiAddress(),
                     decimals,
@@ -459,13 +449,12 @@ router.post("/coins", async (req, res) => {
                     symbol,
                     description,
                     iconUrl,
-                    website,
+                    websiteUrl,
                     twitterUrl,
                     discordUrl,
                     telegramUrl,
                     target,
                     status: CoinStatus.STARTING_UP,
-                    coinType: `${publishedPackageId}::${toSnakeCase(name)}::${toSnakeCaseUpper(name)}`,
                 },
             });
 

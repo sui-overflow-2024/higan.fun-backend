@@ -1,40 +1,84 @@
 import {WebSocket} from "ws";
 import {getFullnodeUrl, SuiClient, SuiHTTPTransport} from "@mysten/sui.js/client";
-import { PrismaClient } from "./generated/prisma/client";
+import {PrismaClient} from "./generated/prisma/client";
+import {Ed25519Keypair} from "@mysten/sui.js/keypairs/ed25519";
+
+export const keypair = Ed25519Keypair.deriveKeypair(
+    process.env.TEST_MNEMONICS || process.env.PRIVATE_KEY_MNEMONIC || "", //different devs w/ different naming, converge on PRIVATE_KEY_MNEMONIC later
+    "m/44'/784'/0'/0'/0'"
+);
 
 
+type AppConfig = {
+    network: "localnet" | "testnet" | "mainnet" | "devnet",
+    rpcUrl: string,
+    managementPackageId: string,
+    managementConfigId: string,
+    managementModuleName: string,
+    managementAdminCapId: string,
+    keypair: Ed25519Keypair
+}
 // hack to serialize to json
 declare global {
     interface BigInt {
-      toJSON: () => string;
+        toJSON: () => string;
     }
-  }
+}
 
-BigInt.prototype.toJSON = function() { return this.toString() }
+BigInt.prototype.toJSON = function () {
+    return this.toString()
+}
+
 
 export const network = process.env.NEXT_PUBLIC_NETWORK || "testnet";
 if (network !== "localnet" && network !== "testnet" && network !== "mainnet" && network !== "devnet") {
     throw new Error(`Invalid network: ${network}. Please use localnet, testnet, mainnet, or devnet`);
 }
 
-const {MANAGER_CONTRACT_PACKAGE_ID,MANAGER_CONTRACT_MODULE_NAME,MANAGER_CONTRACT_ADMIN_CAP_ID} = process.env;
 
-if (!MANAGER_CONTRACT_PACKAGE_ID || !MANAGER_CONTRACT_MODULE_NAME || !MANAGER_CONTRACT_ADMIN_CAP_ID) {
-  throw new Error("Manager contract package id, module name, and admin cap object id must be set")
+export const rpcUrl = process.env.RPC_URL || getFullnodeUrl(network);
+if (!rpcUrl) {
+    throw new Error("RPC_URL envvar or a valid NETWORK envvar for default RPC is required");
+
 }
 
-export const managerContract = {
-  packageId: MANAGER_CONTRACT_PACKAGE_ID,
-  moduleName: MANAGER_CONTRACT_MODULE_NAME,
-  adminCap: MANAGER_CONTRACT_ADMIN_CAP_ID,
+const {
+    MANAGER_CONTRACT_PACKAGE_ID,
+    MANAGER_CONTRACT_CONFIG_ID,
+    MANAGER_CONTRACT_MODULE_NAME,
+    MANAGER_CONTRACT_ADMIN_CAP_ID
+} = process.env;
+
+if (!MANAGER_CONTRACT_PACKAGE_ID) {
+    throw new Error("MANAGER_CONTRACT_PACKAGE_ID envvar is required");
 }
 
-export const rpcUrl = getFullnodeUrl(network);
-console.log("Using network: ", network, " with RPC URL: ", process.env.RPC_URL || rpcUrl);
+if (!MANAGER_CONTRACT_CONFIG_ID) {
+    throw new Error("MANAGER_CONTRACT_CONFIG_ID envvar is required");
+}
 
+if (!MANAGER_CONTRACT_MODULE_NAME) {
+    throw new Error("MANAGER_CONTRACT_ADMIN_CAP_ID envvar is required");
+}
+
+if (!MANAGER_CONTRACT_ADMIN_CAP_ID) {
+    throw new Error("MANAGER_CONTRACT_ADMIN_CAP_ID envvar is required");
+}
+
+
+export const config: AppConfig = {
+    network,
+    rpcUrl,
+    managementPackageId: MANAGER_CONTRACT_PACKAGE_ID,
+    managementConfigId: MANAGER_CONTRACT_CONFIG_ID,
+    managementModuleName: MANAGER_CONTRACT_MODULE_NAME,
+    managementAdminCapId: MANAGER_CONTRACT_ADMIN_CAP_ID,
+    keypair
+}
+console.log("config", config)
 export const client = new SuiClient({
     transport: new SuiHTTPTransport({
-        url: process.env.RPC_URL || rpcUrl,
+        url: config.rpcUrl,
         // url: 'https://sui-testnet.nodeinfra.com/?apikey=hackathon',
         // The typescript definitions may not match perfectly, casting to never avoids these minor incompatibilities
         WebSocketConstructor: WebSocket as never,

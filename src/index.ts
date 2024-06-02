@@ -3,8 +3,32 @@ import cors from "cors";
 import coinRouter from "./routes/coins"
 import postRouter from "./routes/thread"
 import morgan from "morgan";
-import { prisma } from "./config";
-import { client } from "./config";
+import {client, config, prisma} from "./config";
+import type {SuiEvent} from "@mysten/sui.js/client";
+import {toPascalCase, toSnakeCase} from "./lib";
+import {moveTomlTemplate, tokenTemplate} from "./templates/token_module";
+import os from "os";
+import path from "path";
+import fs from "fs";
+import {exec} from "node:child_process";
+import {TransactionBlock} from "@mysten/sui.js/transactions";
+import {CoinStatus, EventType} from "./types";
+import crypto from "crypto";
+
+
+type ReceiptFields = {
+    creator: string,
+    name: string,
+    symbol: string,
+    decimals: string,
+    description: string,
+    icon_url: string,
+    website_url: string,
+    twitter_url: string,
+    discord_url: string,
+    telegram_url: string,
+    target: string
+}
 
 const app = express();
 app.use(cors());
@@ -19,156 +43,337 @@ const server = app.listen(process.env.PORT || 3000, () =>
 `)
 );
 
-const COIN_SOCIALS_UPDATED_EVENT = 'CoinSocialsUpdatedEvent'
-const STATUS_UPDATED_EVENT = 'CoinStatusChangedEvent'
-const SWAP_EVENT = 'SwapEvent'
+const {keypair} = config;
+let unsubscribe: any
+const extractEventMetadata = (event: any): { eventType: EventType, packageId: string, txDigest: string } => {
+    let eventType = event.type.split('::').at(-1);
+    let packageId = event.packageId;
+    let txDigest = event.id.txDigest;
+    return {eventType, packageId, txDigest};
 
-let globalCoins: { packageId: string }[] = [];
-//
-// let unsubscribe: any
-// const startListener = async () => {
-//     globalCoins = await prisma.coin.findMany({
-//         select: {
-//             packageId: true
-//         },
-//         orderBy: {
-//             packageId: 'asc'
-//         }
-//     });
-//     let packagesIds = globalCoins.map(({packageId}) => {
-//         return {Package: packageId};
-//     });
+}
 
-//     console.log(`${new Date().toLocaleString()} listener for events on this package ids `, packagesIds)
+const processPrepayForListingEvent = async (event: SuiEvent & {
+    parsedJson: {
+        receipt: string,
+    }
+}) => {
+    let {
+        receipt,
+    } = event.parsedJson;
+    const {data, error} = await client.getObject({
+        id: receipt,
+        options: {
+            showBcs: false,
+            showContent: true,
+            showDisplay: true,
+            showOwner: true,
+            showPreviousTransaction: false,
+            showStorageRebate: false,
+            showType: true,
+        }
+    })
+    if (error) {
+        console.error("Error fetching receipt, need a backup plan here", error)
+        return
+    }
+    // @ts-ignore
+    if (!data?.content?.fields) {
+        console.error("No fields in receipt", data)
+        return
+    }
+    try {
 
-//     unsubscribe = await client.subscribeEvent({
-//         // filter: {Package: "0xb96d1556fa6a9f42ac8027b3acd7818691bcc08488dab542678b908dfc80f88f"},
-//         filter: {Any: packagesIds},
-//         onMessage: async (event: any) => {
-//             let eventType = event.type.split('::').at(-1);
-//             let packageId = event.packageId;
-//             let txDigest = event.id.txDigest;
+        const {
+            creator,
+            name,
+            symbol,
+            decimals,
+            description,
+            icon_url,
+            website_url,
+            twitter_url,
+            discord_url,
+            telegram_url,
+            target
+            // @ts-ignore
+        }: ReceiptFields = data.content.fields;
+        console.log("RECEIPT", data)
 
-//             console.log(eventType);
-//             console.log('subscribeEvent', JSON.stringify(event, null, 2));
+        const templateData = {
+            name_snake_case_caps: toSnakeCase(name).toUpperCase(),
+            name_snake_case: toSnakeCase(name),
+            name_capital_camel_case: toPascalCase(name),
+            coin_metadata_decimals: decimals, //NOTE: Decimals are hardcoded to 3 in the template contract, this does nothing
+            coin_metadata_icon_url: icon_url,
+            coin_metadata_symbol: symbol,
+            coin_metadata_description: description,
+            optional_metadata_website_url: website_url,
+            optional_metadata_twitter_url: twitter_url,
+            optional_metadata_discord_url: discord_url,
+            optional_metadata_telegram_url: telegram_url,
+        };
 
-//             if (eventType == COIN_SOCIALS_UPDATED_EVENT) {
-//                 let {discord_url, twitter_url, website_url, telegram_url} = event.parsedJson;
+        const tokenCode = tokenTemplate(templateData);
+        const moveToml = moveTomlTemplate({});
 
-//                 const coin = await prisma.coin.update({
-//                     where: {packageId: packageId},
-//                     data: {
-//                         discordUrl: discord_url,
-//                         twitterUrl: twitter_url,
-//                         website: website_url,
-//                         telegramUrl: telegram_url,
-//                     },
-//                 });
-//             } else if (eventType === SWAP_EVENT) {
-//                 let {
-//                     is_buy,
-//                     sui_amount,
-//                     coin_amount,
-//                     account,
-//                     coin_price,
-//                     total_sui_reserve,
-//                     total_supply,
-//                 } = event.parsedJson;
-//                 console.log(event.parsedJson)
-//                 console.log(is_buy, "isBuy");
+        const id = crypto.randomBytes(16).toString("hex");
 
-//                 await prisma.trade.create({
-//                     data: {
-//                         suiAmount: parseInt(sui_amount),
-//                         coinAmount: parseInt(coin_amount),
-//                         account: account,
-//                         coinId: packageId,
-//                         transactionId: txDigest,
-//                         isBuy: is_buy,
-//                         coinPrice: coin_price,
-//                     }
-//                 });
+        // TODO: which directory should we use?
+        const homeDir = os.homedir();
+        const uniqueDir = path.join(homeDir, "coins", id);
+        const coinDir = path.join(
+            uniqueDir,
+            "coins",
+            id,
+            "we-hate-the-ui-contracts"
+        );
+        const sourcesDir = path.join(coinDir, "sources");
+        const coinFilePath = path.join(sourcesDir, `coin.move`);
+        const moveTomlFilePath = path.join(coinDir, `Move.toml`);
 
-//                 let oneDayAgo = new Date();
-//                 oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+        fs.mkdirSync(coinDir, {recursive: true});
+        fs.mkdirSync(sourcesDir);
 
-//                 await prisma.coin.update({
-//                     where: {
-//                         packageId: packageId
-//                     },
-//                     data: {
-//                         suiReserve: total_sui_reserve,
-//                     }
-//                 });
+        fs.writeFileSync(coinFilePath, tokenCode);
+        fs.writeFileSync(moveTomlFilePath, moveToml);
 
-//             } else if (eventType === STATUS_UPDATED_EVENT) {
-//                 console.log("STATUS_UPDATED_EVENT", event.parsedJson)
-//                 let {new_status} = event.parsedJson;
-//                 await prisma.coin.update({
-//                     where: {packageId: packageId},
-//                     data: {
-//                         status: parseInt(new_status),
-//                     }
-//                 })
-//             }
-//         },
-//     });
+        exec(`sui move build --dump-bytecode-as-base64 --path ${coinDir}`, async (error: any, stdout: any, stderr: any) => {
+            console.log('stdout: ' + stdout);
+            console.log("error" + error);
+            console.log("stderr" + stderr);
 
-//     // Query the DB for coins, only return the packageId
-//     // Compare the DB collection to the current collection of coins
-//     // If changed, restart the event listener with a filter containing the updated list of coins.
+            if (error !== null) {
+                console.log('exec error building the coin: ' + error);
+                return
+            }
+
+            const compiledModulesAndDependencies = JSON.parse(stdout);
+            const tx = new TransactionBlock();
+            tx.setSenderIfNotSet(keypair.getPublicKey().toSuiAddress());
+            const [upgradeCap] = tx.publish({
+                modules: compiledModulesAndDependencies.modules,
+                dependencies: compiledModulesAndDependencies.dependencies,
+            });
+
+            tx.transferObjects(
+                [upgradeCap],
+                tx.pure(keypair.getPublicKey().toSuiAddress())
+            );
+
+            console.log("signerAddress: " + keypair.toSuiAddress())
+            const response = await client.signAndExecuteTransactionBlock({
+                signer: keypair,
+                transactionBlock: tx,
+                options: {
+                    showBalanceChanges: true,
+                    showEffects: true,
+                    showEvents: true,
+                    showInput: true,
+                    showObjectChanges: true,
+                },
+            });
+            //@ts-ignore-next-line
+            const publishedPackageId = response.objectChanges?.find(change => change.type === 'published')?.packageId;
+            //@ts-ignore-next-line
+            const coinType = `${publishedPackageId}::${templateData.name_snake_case}::${templateData.name_snake_case_caps}`;
+            const treasuryCapType = `0x2::coin::TreasuryCap<${coinType}>`
+            //@ts-ignore-next-line
+            const treasuryCapObjectId = response.objectChanges?.find(change => change.type === "created" && change.objectType == treasuryCapType)?.objectId;
+            //@ts-ignore-next-line
+
+            fs.rmSync(uniqueDir, {recursive: true, force: true});
+
+            const listCoinTx = new TransactionBlock();
+            listCoinTx.setSenderIfNotSet(keypair.getPublicKey().toSuiAddress());
+            listCoinTx.moveCall({
+                target: `${config.managementPackageId}::${config.managementModuleName}::list`,
+                arguments: [
+                    listCoinTx.object(config.managementAdminCapId),
+                    listCoinTx.object(treasuryCapObjectId),
+                    listCoinTx.object(receipt),
+                ],
+                typeArguments: [`${publishedPackageId}::${templateData.name_snake_case}::${templateData.name_snake_case_caps}`]
+            });
+            const listCoinResponse = await client.signAndExecuteTransactionBlock({
+                signer: keypair,
+                transactionBlock: listCoinTx,
+                options: {
+                    showBalanceChanges: true,
+                    showEffects: true,
+                    showEvents: true,
+                    showInput: true,
+                    showObjectChanges: true,
+                },
+            });
+
+            const bondingCurveType = `${config.managementPackageId}::${config.managementModuleName}::BondingCurve<${coinType}>`;
+            //@ts-ignore-next-line
+            const bondingCurveId = listCoinResponse.objectChanges?.find(change => change.type === "created" && change.objectType == bondingCurveType)?.objectId;
+
+            if (bondingCurveId === undefined) {
+                throw new Error("BondingCurve not found in response after listing coin");
+            }
+
+            console.log(listCoinResponse)
+
+            const coin = await prisma.coin.create({
+                data: {
+                    packageId: publishedPackageId,
+                    bondingCurveId: bondingCurveId,
+                    module: toSnakeCase(name),
+                    creator,
+                    decimals: parseInt(decimals),
+                    name,
+                    symbol,
+                    description,
+                    iconUrl: icon_url,
+                    websiteUrl: website_url,
+                    twitterUrl: twitter_url,
+                    discordUrl: discord_url,
+                    telegramUrl: telegram_url,
+                    target: BigInt(target),
+                    status: CoinStatus.ACTIVE,
+                },
+            });
+
+            console.log("Coin created", coin)
+
+        })
+
+    } catch (error) {
+        console.error("uncaught error creating coin: ", error);
+    }
+
+}
+const processSocialsUpdatedEvent = async (event: SuiEvent & {
+    parsedJson: {
+        bonding_curve_id: string,
+        discord_url: string;
+        twitter_url: string;
+        website_url: string;
+        telegram_url: string;
+    }
+}) => {
+    console.log("COIN_SOCIALS_UPDATED_EVENT", event.parsedJson);
+    let {bonding_curve_id, discord_url, twitter_url, website_url, telegram_url} = event.parsedJson;
+    console.log()
+
+    await prisma.coin.update({
+        where: {bondingCurveId: bonding_curve_id},
+        data: {
+            discordUrl: discord_url,
+            twitterUrl: twitter_url,
+            websiteUrl: website_url,
+            telegramUrl: telegram_url,
+        },
+    });
+}
+
+const processSwapEvent = async (event: SuiEvent & {
+    parsedJson: {
+        bonding_curve_id: string,
+        is_buy: boolean,
+        sui_amount: string,
+        coin_amount: string,
+        account: string,
+        coin_price: bigint,
+        total_sui_reserve: bigint,
+        total_supply: bigint,
+    }
+}) => {
+    let {
+        bonding_curve_id,
+        is_buy,
+        sui_amount,
+        coin_amount,
+        account,
+        coin_price,
+        total_sui_reserve,
+        total_supply,
+    } = event.parsedJson;
+
+    await prisma.trade.create({
+        data: {
+            suiAmount: parseInt(sui_amount),
+            coinAmount: parseInt(coin_amount),
+            account: account,
+            coinId: event.packageId,
+            transactionId: event.id.txDigest,
+            isBuy: is_buy,
+            coinPrice: coin_price,
+        }
+    });
+
+    let oneDayAgo = new Date();
+    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+
+    await prisma.coin.update({
+        where: {
+            bondingCurveId: bonding_curve_id
+        },
+        data: {
+            suiReserve: total_sui_reserve,
+        }
+    });
+
+}
+
+const processStatusUpdatedEvent = async (event: SuiEvent & {
+    parsedJson: {
+        bonding_curve_id: string
+        new_status: string
+    }
+}) => {
+    let {bonding_curve_id, new_status} = event.parsedJson;
+    await prisma.coin.update({
+        where: {bondingCurveId: bonding_curve_id},
+        data: {
+            status: parseInt(new_status),
+        }
+    })
+
+}
+const startListener = async () => {
 
 
-//     process.on('SIGINT', async () => {
-//         console.log('Interrupted...');
-//         if (unsubscribe) {
-//             await unsubscribe();
-//             server.close()
-//             //@ts-ignore-next-line
-//             unsubscribe = undefined;
-//         }
-//     });
-//     return unsubscribe;
-// }
-// startListener()
+    console.log(`${new Date().toLocaleString()} listener for events on the management contract. managementPackageId: 
+    ${config.managementPackageId} managementConfigId ${config.managementConfigId}`);
 
-// setInterval(async () => {
-//     try {
-//         let needsRefresh = false;
-//         const coins = await prisma.coin.findMany({
-//             select: {
-//                 packageId: true
-//             },
-//             orderBy: {
-//                 packageId: 'asc'
-//             }
-//         });
-//         //   update
-//         if (globalCoins.length != coins.length) {
-//             // needs refresh
-//             console.log("globalCoins.length != coins.length", globalCoins.length, coins.length)
-//             needsRefresh = true;
-//         } else {
-//             for (let i = 0; i < coins.length; i++) {
-//                 if (globalCoins[i].packageId !== coins[i].packageId) {
-//                     console.log("globalCoins[i] !== coins[i]", globalCoins[i], coins[i])
-//                     needsRefresh = true;
-//                     break;
-//                 }
-//             }
-//         }
-//         if (needsRefresh) {
-//             console.log("Refreshing listener on coins")
-//             await unsubscribe();
-//             unsubscribe = await startListener();
-//         }
-//     } catch (error) {
+    unsubscribe = await client.subscribeEvent({
+        filter: {Any: [{Package: config.managementPackageId}]},
+        onMessage: async (event: SuiEvent & { parsedJson: any }) => {
 
-//         console.log("Refreshing listener on coins failed", error)
-//         await unsubscribe();
-//         unsubscribe = await startListener();
-//         console.error('Failed to fetch coins:', error);
-//     }
-// }, 5000);
+            const {eventType, packageId, txDigest} = extractEventMetadata(event);
+            console.log("EVENT", event)
+            if (eventType === EventType.PREPAY_FOR_LISTING_EVENT) {
+                await processPrepayForListingEvent(event);
+            } else if (eventType == EventType.COIN_SOCIALS_UPDATED_EVENT) {
+                await processSocialsUpdatedEvent(event);
+            } else if (eventType === EventType.SWAP_EVENT) {
+                await processSwapEvent(event);
+            } else if (eventType === EventType.STATUS_UPDATED_EVENT) {
+                await processStatusUpdatedEvent(event);
+            }
+        },
+    });
+
+    // Query the DB for coins, only return the packageId
+    // Compare the DB collection to the current collection of coins
+    // If changed, restart the event listener with a filter containing the updated list of coins.
+
+
+    process.on('SIGINT', async () => {
+        console.log('Interrupted...');
+        if (unsubscribe) {
+            await unsubscribe();
+            server.close()
+            //@ts-ignore-next-line
+            unsubscribe = undefined;
+        }
+    });
+    return unsubscribe;
+}
+startListener()
 
 // RELOAD listener when a coin is created
