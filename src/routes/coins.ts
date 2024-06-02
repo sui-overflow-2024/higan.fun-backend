@@ -174,13 +174,13 @@ router.get("/coins/search", async (req, res) => {
 
             const coins = await prisma.coin.findMany({
                 where: {
-                    packageId: {
+                    bondingCurveId: {
                         in: coinIds,
                     },
                 },
             });
 
-            const coinMap = new Map(coins.map(coin => [coin.packageId, coin]));
+            const coinMap = new Map(coins.map(coin => [coin.bondingCurveId, coin]));
             const sortedCoins = coinIds.map(id => coinMap.get(id));
 
             res.json(sortedCoins);
