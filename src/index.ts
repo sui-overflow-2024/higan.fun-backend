@@ -100,7 +100,6 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
         }: ReceiptFields = data.content.fields;
         console.log("RECEIPT", data)
 
-        console.log("icon_url:", icon_url)
         const templateData = {
             name_snake_case_caps: toSnakeCase(name).toUpperCase(),
             name_snake_case: toSnakeCase(name),
@@ -117,6 +116,8 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
 
         const tokenCode = tokenTemplate(templateData);
         const moveToml = moveTomlTemplate({});
+
+        console.log("tokenCode: ", tokenCode)
 
         const id = crypto.randomBytes(16).toString("hex");
 
