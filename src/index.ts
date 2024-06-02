@@ -298,7 +298,7 @@ const processSwapEvent = async (event: SuiEvent & {
             suiAmount: parseInt(sui_amount),
             coinAmount: parseInt(coin_amount),
             account: account,
-            coinId: event.packageId,
+            coinId: bonding_curve_id,
             transactionId: event.id.txDigest,
             isBuy: is_buy,
             coinPrice: coin_price,

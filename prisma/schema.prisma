@@ -30,8 +30,8 @@ datasource db {
 }
 
 model Coin {
-  packageId      String   @id
-  bondingCurveId String   @unique
+  bondingCurveId String   @id
+  packageId      String   @unique
   module         String
   creator        String
   decimals       Int
@@ -63,7 +63,7 @@ model Trade {
   isBuy         Boolean
   account       String
   coinId        String
-  coin          Coin     @relation(fields: [coinId], references: [packageId])
+  coin          Coin     @relation(fields: [coinId], references: [bondingCurveId])
   coinPrice     BigInt
   transactionId String
   createdAt     DateTime @default(now())
@@ -91,6 +91,6 @@ model Post {
   // text     String @db.VarChar(1000)
   likes     Int      @default(0)
   // author   User   @relation(fields: [authorId], references: [id])
-  coin      Coin     @relation(fields: [coinId], references: [packageId])
+  coin      Coin     @relation(fields: [coinId], references: [bondingCurveId])
   createdAt DateTime @default(now())
 }

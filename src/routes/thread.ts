@@ -30,6 +30,7 @@ router.get('/post/:id', async (req: Request<{ id: number }>, res: Response) => {
     return res.json(thread);
 });
 
+// Get posts for a given bonding curve
 router.get('/coin/:coinId/posts', async (req, res) => {
     let {coinId} = req.params;
 
@@ -47,7 +48,6 @@ router.get('/coin/:coinId/posts', async (req, res) => {
 
 router.post('/post', async (req: Request<{}, any, ThreadPostRequest>, res: Response) => {
         const validation = threadSchema.validate(req.body);
-        console.log("validation", validation)
         if (validation.error) {
             return res.status(400).send(validation.error.details[0].message);
         }
@@ -57,7 +57,7 @@ router.post('/post', async (req: Request<{}, any, ThreadPostRequest>, res: Respo
         const publicKey = await verifyPersonalMessage(message, signature);
 
         if (publicKey.toSuiAddress() !== author) {
-            return res.status(401).send("Signature doesn't match the message");
+            return res.status(401).send("Signature doesn't match the message, blocking post creation");
         }
 
 
