@@ -100,6 +100,7 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
         }: ReceiptFields = data.content.fields;
         console.log("RECEIPT", data)
 
+        console.log("icon_url:", icon_url)
         const templateData = {
             name_snake_case_caps: toSnakeCase(name).toUpperCase(),
             name_snake_case: toSnakeCase(name),
@@ -173,6 +174,7 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
                     showObjectChanges: true,
                 },
             });
+            console.log("Finished publishing coin, now listing on the manager contract...")
             //@ts-ignore-next-line
             const publishedPackageId = response.objectChanges?.find(change => change.type === 'published')?.packageId;
             //@ts-ignore-next-line
@@ -184,6 +186,13 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
 
             fs.rmSync(uniqueDir, {recursive: true, force: true});
 
+            console.log("debug listing")
+            console.log(config.managementAdminCapId)
+            console.log(`${config.managementPackageId}::${config.managementModuleName}::list`)
+            console.log(treasuryCapObjectId)
+            console.log(receipt)
+            console.log(`${publishedPackageId}::${templateData.name_snake_case}::${templateData.name_snake_case_caps}`)
+            console.log("end...")
             const listCoinTx = new TransactionBlock();
             listCoinTx.setSenderIfNotSet(keypair.getPublicKey().toSuiAddress());
             listCoinTx.moveCall({

@@ -30,22 +30,6 @@ router.get('/post/:id', async (req: Request<{ id: number }>, res: Response) => {
     return res.json(thread);
 });
 
-// Get posts for a given bonding curve
-router.get('/coin/:coinId/posts', async (req, res) => {
-    let {coinId} = req.params;
-
-    const threads = await prisma.post.findMany({
-        where: {
-            coinId: coinId,
-        },
-        orderBy: {
-            createdAt: 'desc'
-        }
-    },);
-
-    return res.json(threads);
-});
-
 router.post('/post', async (req: Request<{}, any, ThreadPostRequest>, res: Response) => {
         const validation = threadSchema.validate(req.body);
         if (validation.error) {

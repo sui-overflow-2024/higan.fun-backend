@@ -11,7 +11,7 @@ type SortOrder = 'asc' | 'desc';
 
 
 const router = express.Router()
-router.get("/top_coins", async (_, res) => {
+router.get("/coins/top", async (_, res) => {
     let hottest = undefined;
     let newest = await prisma.coin.findFirst({
         orderBy: {
@@ -129,13 +129,13 @@ router.get("/coins/search", async (req, res) => {
                     {
                         name: {
                             contains: term,
-                            //   mode: 'sensitive',
+                            mode: 'insensitive',
                         },
                     },
                     {
                         symbol: {
                             startsWith: term,
-                            // mode: 'insensitive',
+                            mode: 'insensitive',
                         },
                     },
                 ],
@@ -206,30 +206,12 @@ router.get("/coins/:id", async (req, res) => {
     const {id} = req.params;
     try {
         const coin = await prisma.coin.findUnique({
-            where: {packageId: id},
+            where: {bondingCurveId: id},
         });
         if (coin) {
             res.json(coin);
         } else {
             res.status(404).json({error: "Coin not found"});
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({error: "Internal server error"});
-    }
-});
-
-router.get("/coins/bondingcurve/:id", async (req, res) => {
-    const {id} = req.params;
-    try {
-        const coin = await prisma.coin.findUnique({
-            where: {bondingCurveId: id},
-        });
-        console.log("bondingCurve coin", coin)
-        if (coin) {
-            res.json(coin);
-        } else {
-            res.status(404).json({error: `Coin w/ bondingCurveId ${id} not found`});
         }
     } catch (error) {
         console.error(error);
@@ -264,7 +246,7 @@ interface AccountTokens {
     totalTokens: number;
 }
 
-router.get('/coin/:id/holders', async (req, res) => {
+router.get('/coins/:id/holders', async (req, res) => {
     const {id} = req.params;
     try {
         const result: AccountTokens[] = await prisma.$queryRaw`
@@ -282,5 +264,48 @@ router.get('/coin/:id/holders', async (req, res) => {
     }
 });
 
+router.get('/coins/:bondingCurveId/tvl24h', async (req, res) => {
+    const id = req.params.bondingCurveId;
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setDate(twentyFourHoursAgo.getDate() - 1);
+    console.log("twentyFourHoursAgo", twentyFourHoursAgo)
+    console.log("id", id)
+
+    const aggregateTradingVolume = await prisma.trade.groupBy({
+        by: ['coinId'],
+        where: {
+            createdAt: {
+                gte: twentyFourHoursAgo,
+            },
+            coin: {
+                bondingCurveId: id,
+            }
+        },
+        _sum: {
+            suiAmount: true
+        },
+    });
+    console.log("aggregateTradingVolume", aggregateTradingVolume)
+    return res.json({
+        bondingCurveId: id,
+        tvl: aggregateTradingVolume[0]?._sum?.suiAmount || 0,
+    })
+})
+
+// Get posts for a given bonding curve
+router.get('/coins/:coinId/posts', async (req, res) => {
+    let {coinId} = req.params;
+
+    const threads = await prisma.post.findMany({
+        where: {
+            coinId: coinId,
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    },);
+
+    return res.json(threads);
+});
 
 export default router
