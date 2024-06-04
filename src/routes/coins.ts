@@ -45,7 +45,7 @@ router.get("/coins/top", async (_, res) => {
         const coinId = aggregateTradingVolume[0].coinId;
         hottest = await prisma.coin.findFirst({
             where: {
-                packageId: coinId,
+                bondingCurveId: coinId,
             },
         });
     }
