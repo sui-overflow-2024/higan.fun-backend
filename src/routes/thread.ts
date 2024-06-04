@@ -2,6 +2,7 @@ import {prisma} from "../config";
 import express, {Request, Response} from "express"
 import Joi from "joi";
 import {verifyPersonalMessage} from '@mysten/sui.js/verify';
+import {broadcastToWs} from "../websockets";
 
 const router = express.Router();
 type ThreadPostRequest = {
@@ -45,38 +46,19 @@ router.post('/post', async (req: Request<{}, any, ThreadPostRequest>, res: Respo
         }
 
 
-        const newThread = await prisma.post.create({
+        const post = await prisma.post.create({
             data: {
                 coinId,
                 text,
                 authorId: req.body.author || "",
             }
         });
-        console.log("created thread", newThread);
-        return res.json(newThread);
+        
+        broadcastToWs({type: "post_created", data: post})
+        console.log("created post", post, "on thread", coinId, "with author", author, "and signature", signature);
+        return res.json(post);
     }
 );
 
-// Update Thread
-// router.put('/post/:id', async (req: Request<{id: number}, any, PostUpdateArgs>, res) => {
-// TODO If you implement this, create a sig auth middleware
-//     const { message, signature } = req.body;
-//     const recoveredAddress = extractAddressFromMessage(message, signature);
-//     if (!recoveredAddress === message.account) {
-//         logger.warn(`Received signature from address that doesn't match the signature.
-//     Got ${message.account} in the message but recovered ${recoveredAddress}`);
-//         return res.status(401).send("Signature doesn't match the message");
-//     }
-//     next();
-//     const updatedThread = await prisma.thread.update({where: {id: req.params.id}, data: req.body};
-//     res.json(updatedThread);
-// });
-
-// Delete Thread
-// router.delete('/thread/:id', async (req, res) => {
-// TODO If you implement this, create a sig auth middleware
-//     await Thread.deleteThread(req.params.id);
-//     res.json({ message: 'Thread deleted' });
-// });
 
 export default router

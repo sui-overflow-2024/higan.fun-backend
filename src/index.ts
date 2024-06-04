@@ -14,6 +14,8 @@ import {exec} from "node:child_process";
 import {TransactionBlock} from "@mysten/sui.js/transactions";
 import {CoinStatus, EventType} from "./types";
 import crypto from "crypto";
+import * as http from "http";
+import {broadcastToWs} from "./websockets";
 
 
 type ReceiptFields = {
@@ -31,15 +33,17 @@ type ReceiptFields = {
 }
 
 const app = express();
+export const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(coinRouter)
 app.use(postRouter)
 
-const server = app.listen(process.env.PORT || 3000, () =>
+
+server.listen(config.port, () =>
     console.log(`
-🚀 Server ready at: http://127.0.0.1:${process.env.PORT || 3000}
+🚀 Server ready at: http://127.0.0.1:${config.port}
 `)
 );
 
@@ -246,6 +250,7 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
                     status: CoinStatus.ACTIVE,
                 },
             });
+            broadcastToWs({type: "coin_created", data: coin})
 
             console.log("Coin created", coin)
 
@@ -303,7 +308,7 @@ const processSwapEvent = async (event: SuiEvent & {
         total_supply,
     } = event.parsedJson;
 
-    await prisma.trade.create({
+    const trade = await prisma.trade.create({
         data: {
             suiAmount: parseInt(sui_amount),
             coinAmount: parseInt(coin_amount),
@@ -318,7 +323,7 @@ const processSwapEvent = async (event: SuiEvent & {
     let oneDayAgo = new Date();
     oneDayAgo.setHours(oneDayAgo.getHours() - 24);
 
-    await prisma.coin.update({
+    const coin = await prisma.coin.update({
         where: {
             bondingCurveId: bonding_curve_id
         },
@@ -326,7 +331,7 @@ const processSwapEvent = async (event: SuiEvent & {
             suiReserve: total_sui_reserve,
         }
     });
-
+    broadcastToWs({type: "trade_created", data: trade})
 }
 
 const processStatusUpdatedEvent = async (event: SuiEvent & {
@@ -351,9 +356,8 @@ const startListener = async () => {
     ${config.managementPackageId} managementConfigId ${config.managementConfigId}`);
 
     unsubscribe = await client.subscribeEvent({
-        filter: {Any: [{Package: config.managementPackageId}]},
+        filter: {Package: config.managementPackageId},
         onMessage: async (event: SuiEvent & { parsedJson: any }) => {
-
             const {eventType, packageId, txDigest} = extractEventMetadata(event);
             console.log("EVENT", event)
             if (eventType === EventType.PREPAY_FOR_LISTING_EVENT) {

@@ -1,5 +1,6 @@
 import handlebars from 'handlebars';
 
+// This template can be generated w/ generate_template.py in the contracts repo
 export const tokenTemplate =
     handlebars.compile(`module higan_fun::{{name_snake_case}} {
     use sui::coin::{Self};

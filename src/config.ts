@@ -12,6 +12,8 @@ export const keypair = Ed25519Keypair.deriveKeypair(
 type AppConfig = {
     network: "localnet" | "testnet" | "mainnet" | "devnet",
     rpcUrl: string,
+    port: number,
+    wsPort: number,
     managementPackageId: string,
     managementConfigId: string,
     managementModuleName: string,
@@ -69,6 +71,8 @@ if (!MANAGER_CONTRACT_ADMIN_CAP_ID) {
 export const config: AppConfig = {
     network,
     rpcUrl,
+    port: parseInt(process.env.PORT || "3000"),
+    wsPort: parseInt(process.env.WS_PORT || "3001"),
     managementPackageId: MANAGER_CONTRACT_PACKAGE_ID,
     managementConfigId: MANAGER_CONTRACT_CONFIG_ID,
     managementModuleName: MANAGER_CONTRACT_MODULE_NAME,

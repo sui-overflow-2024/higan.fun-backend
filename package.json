@@ -10,12 +10,12 @@
   "dependencies": {
     "@mysten/sui.js": "^0.54.1",
     "@prisma/client": "^5.14.0",
-    "@types/joi": "^17.2.3",
     "axios": "^1.6.8",
     "cors": "^2.8.5",
     "express": "4.19.2",
     "handlebars": "^4.7.8",
     "joi": "^17.13.1",
+    "kriya-dex-sdk": "^1.1.69",
     "morgan": "^1.10.0",
     "ws": "^8.17.0"
   },

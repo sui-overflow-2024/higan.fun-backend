@@ -110,7 +110,6 @@ const searchCoinsSchema = Joi.object({
 });
 
 router.get("/coins/search", async (req, res) => {
-    // TODO: fix later
     const validation = searchCoinsSchema.validate(req.query);
 
     if (validation.error) {
