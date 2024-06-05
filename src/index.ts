@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import coinRouter from "./routes/coins"
 import postRouter from "./routes/thread"
+import tradesRouter from "./routes/trades"
 import morgan from "morgan";
 import {client, config, prisma} from "./config";
 import type {SuiEvent} from "@mysten/sui.js/client";
@@ -15,7 +16,8 @@ import {TransactionBlock} from "@mysten/sui.js/transactions";
 import {CoinStatus, EventType} from "./types";
 import crypto from "crypto";
 import * as http from "http";
-import {broadcastToWs} from "./websockets";
+import {Coin, Post, Trade} from "./generated/prisma/client";
+import {Server, Socket} from "socket.io";
 
 
 type ReceiptFields = {
@@ -31,14 +33,43 @@ type ReceiptFields = {
     telegram_url: string,
     target: string
 }
+type EventMessage = Coin | Post | { trade: Trade, coin: Coin }
+
 
 const app = express();
 export const server = http.createServer(app);
+
+const io = new Server(server, {
+    cors: {
+        origin: "*", // Allow all origins
+    }
+});
+
+io.on('connection', (ws: Socket) => {
+    console.log('Client connected');
+
+    ws.on('message', (message: string) => {
+        console.log(`Received message => ${message}`);
+    });
+    ws.on('pong', () => {
+        console.log('Received pong from client');
+    });
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
+
+});
+
+// Function to broadcast messages to all connected clients
+export const broadcastToWs = (event: string, data: EventMessage) => {
+    io.emit(event, data);
+};
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(coinRouter)
 app.use(postRouter)
+app.use(tradesRouter)
 
 
 server.listen(config.port, () =>
@@ -250,7 +281,7 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
                     status: CoinStatus.ACTIVE,
                 },
             });
-            broadcastToWs({type: "coin_created", data: coin})
+            broadcastToWs("coinCreated", coin)
 
             console.log("Coin created", coin)
 
@@ -331,7 +362,7 @@ const processSwapEvent = async (event: SuiEvent & {
             suiReserve: total_sui_reserve,
         }
     });
-    broadcastToWs({type: "trade_created", data: trade})
+    broadcastToWs("tradeCreated", {trade, coin})
 }
 
 const processStatusUpdatedEvent = async (event: SuiEvent & {
@@ -350,8 +381,6 @@ const processStatusUpdatedEvent = async (event: SuiEvent & {
 
 }
 const startListener = async () => {
-
-
     console.log(`${new Date().toLocaleString()} listener for events on the management contract. managementPackageId: 
     ${config.managementPackageId} managementConfigId ${config.managementConfigId}`);
 

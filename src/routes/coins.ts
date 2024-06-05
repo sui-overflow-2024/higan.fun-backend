@@ -74,6 +74,8 @@ router.get("/coins", async (req, res) => {
         let packageIds: string[] = [];
         let packageIdsRaw = req.query.packageIds;
         let creatorRaw = req.query.creator;
+        let limit = req.query.limit ? parseInt(req.query.limit as string) : undefined; // Add limit
+        let order: 'asc' | 'desc' = req.query.order === 'asc' ? 'asc' : 'desc'; // Add order
 
         if (typeof packageIdsRaw === "string") {
             packageIds = packageIdsRaw.split(",");
@@ -93,8 +95,11 @@ router.get("/coins", async (req, res) => {
 
         const coins = await prisma.coin.findMany({
             where: whereArgs,
+            take: limit, // Use limit
+            orderBy: {
+                createdAt: order // Use order
+            }
         });
-
 
         return res.json(coins);
     } catch (error) {
@@ -102,7 +107,6 @@ router.get("/coins", async (req, res) => {
         return res.status(500).json({error: "Internal server error"});
     }
 });
-
 const searchCoinsSchema = Joi.object({
     order: Joi.string().valid('asc', 'desc').optional(),
     sort: Joi.string().valid('created', 'marketCap', 'tvl').optional(),

@@ -2,7 +2,7 @@ import {prisma} from "../config";
 import express, {Request, Response} from "express"
 import Joi from "joi";
 import {verifyPersonalMessage} from '@mysten/sui.js/verify';
-import {broadcastToWs} from "../websockets";
+import {broadcastToWs} from "../index";
 
 const router = express.Router();
 type ThreadPostRequest = {
@@ -53,8 +53,8 @@ router.post('/post', async (req: Request<{}, any, ThreadPostRequest>, res: Respo
                 authorId: req.body.author || "",
             }
         });
-        
-        broadcastToWs({type: "post_created", data: post})
+
+        broadcastToWs("postCreated", post)
         console.log("created post", post, "on thread", coinId, "with author", author, "and signature", signature);
         return res.json(post);
     }

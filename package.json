@@ -17,6 +17,8 @@
     "joi": "^17.13.1",
     "kriya-dex-sdk": "^1.1.69",
     "morgan": "^1.10.0",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
     "ws": "^8.17.0"
   },
   "devDependencies": {
