@@ -30,8 +30,12 @@ datasource db {
 }
 
 model Coin {
-  bondingCurveId String   @id
+  id             Int      @id @default(autoincrement())
+  bondingCurveId String   @unique
   packageId      String   @unique
+  coinMetadataId String   @unique
+  poolId         String   @default("")
+  lpTokenId      String   @default("")
   module         String
   creator        String
   decimals       Int

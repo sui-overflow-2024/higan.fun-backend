@@ -139,7 +139,7 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
             name_snake_case_caps: toSnakeCase(name).toUpperCase(),
             name_snake_case: toSnakeCase(name),
             name_capital_camel_case: toPascalCase(name),
-            coin_metadata_decimals: decimals, //NOTE: Decimals are hardcoded to 3 in the template contract, this does nothing
+            coin_metadata_decimals: decimals,
             coin_metadata_icon_url: icon_url,
             coin_metadata_symbol: symbol,
             coin_metadata_description: description,
@@ -210,7 +210,7 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
                     showObjectChanges: true,
                 },
             });
-            console.log("Finished publishing coin, now listing on the manager contract...")
+            console.log("Finished publishing coin, now listing on the manager contract...", response.objectChanges)
             //@ts-ignore-next-line
             const publishedPackageId = response.objectChanges?.find(change => change.type === 'published')?.packageId;
             //@ts-ignore-next-line
@@ -218,7 +218,12 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
             const treasuryCapType = `0x2::coin::TreasuryCap<${coinType}>`
             //@ts-ignore-next-line
             const treasuryCapObjectId = response.objectChanges?.find(change => change.type === "created" && change.objectType == treasuryCapType)?.objectId;
+
+            const coinMetadataType = `0x2::coin::CoinMetadata<${coinType}>`;
             //@ts-ignore-next-line
+            const coinMetadata = response.objectChanges?.find(change => change.type === "created" && change.objectType == coinMetadataType)?.objectId;
+
+            console.log("coin metadata", coinMetadata)
 
             fs.rmSync(uniqueDir, {recursive: true, force: true});
 
@@ -231,11 +236,15 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
             console.log("end...")
             const listCoinTx = new TransactionBlock();
             listCoinTx.setSenderIfNotSet(keypair.getPublicKey().toSuiAddress());
+            console.log("target", `${config.managementPackageId}::${config.managementModuleName}::list`)
+            console.log("args", config.managementAdminCapId, treasuryCapObjectId, receipt)
+            console.log("types", `${publishedPackageId}::${templateData.name_snake_case}::${templateData.name_snake_case_caps}`)
             listCoinTx.moveCall({
                 target: `${config.managementPackageId}::${config.managementModuleName}::list`,
                 arguments: [
                     listCoinTx.object(config.managementAdminCapId),
                     listCoinTx.object(treasuryCapObjectId),
+                    listCoinTx.object(coinMetadata),
                     listCoinTx.object(receipt),
                 ],
                 typeArguments: [`${publishedPackageId}::${templateData.name_snake_case}::${templateData.name_snake_case_caps}`]
@@ -256,6 +265,7 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
             //@ts-ignore-next-line
             const bondingCurveId = listCoinResponse.objectChanges?.find(change => change.type === "created" && change.objectType == bondingCurveType)?.objectId;
 
+            console.log("coin metadata", listCoinResponse.objectChanges)
             if (bondingCurveId === undefined) {
                 throw new Error("BondingCurve not found in response after listing coin");
             }
@@ -279,6 +289,7 @@ const processPrepayForListingEvent = async (event: SuiEvent & {
                     telegramUrl: telegram_url,
                     target: BigInt(target),
                     status: CoinStatus.ACTIVE,
+                    coinMetadataId: coinMetadata
                 },
             });
             broadcastToWs("coinCreated", coin)
@@ -368,16 +379,105 @@ const processSwapEvent = async (event: SuiEvent & {
 const processStatusUpdatedEvent = async (event: SuiEvent & {
     parsedJson: {
         bonding_curve_id: string
+        old_status: string,
         new_status: string
     }
 }) => {
-    let {bonding_curve_id, new_status} = event.parsedJson;
+    let {bonding_curve_id, old_status, new_status} = event.parsedJson;
+    const oldStatus = parseInt(old_status) as CoinStatus
+    const newStatus = parseInt(new_status) as CoinStatus
     await prisma.coin.update({
         where: {bondingCurveId: bonding_curve_id},
         data: {
-            status: parseInt(new_status),
+            status: newStatus,
         }
     })
+    console.log("STATUS_UPDATED_EVENT", event.parsedJson)
+    console.log("oldStatus", oldStatus)
+    console.log("newStatus", newStatus)
+
+    if (oldStatus == CoinStatus.ACTIVE && newStatus == CoinStatus.CLOSE_PENDING) {
+        const coin = await prisma.coin.findFirst({
+            where: {
+                bondingCurveId: bonding_curve_id
+            }
+        })
+        if (!coin) throw new Error(`couldn't find coin when doing status change, bondingCurveId: ${bonding_curve_id}`)
+        const txb = new TransactionBlock()
+        txb.moveCall({
+            target: `${config.managementPackageId}::manager_contract::create_lp`,
+            arguments: [
+                txb.object(config.managementAdminCapId),
+                txb.object(bonding_curve_id),
+                txb.object(config.kriyaProtocolConfigsId),
+                txb.object(coin.coinMetadataId),
+                txb.object(config.suiCoinMetadataId),
+            ],
+            typeArguments: [
+                `${coin.packageId}::${coin.module}::${coin.module.toUpperCase()}`,
+            ],
+        });
+
+        const postLpResponse = await client.signAndExecuteTransactionBlock({
+            signer: keypair,
+            transactionBlock: txb,
+            options: {
+                showBalanceChanges: true,
+                showEffects: true,
+                showEvents: true,
+                showInput: true,
+                showObjectChanges: true,
+            },
+        });
+        console.log("postLpResponse", postLpResponse)
+
+
+        const poolType = `${config.kriyaPackageId}::spot_dex::Pool<${coin.packageId}::${coin.module}::${coin.module.toUpperCase()}, 0x2::sui::SUI>`;
+        console.log("coinMetadataType", poolType)
+        // '0xb5722117aec83525c71f84c31c1f28e29397feffa95c99cce72a150a555a63dd::spot_dex::Pool<0xff56cdad27d53306ef75e40dbcf84826307922e09406306b6f7ed1319ed541ad::tribuo_delego_defungo::TRIBUO_DELEGO_DEFUNGO, 0x2::sui::SUI>',
+        //  0x520b2471ff20ee7b851265c1f4feca4b15bd714cb7a04db652de50a7746f91ea::spot_dex::Pool<0xa26728ed29bd6f9f8f6d359ac3b52bc94053f8675425dd8d20cd809aaca31044::pax_advenio::PAX_ADVENIO, 0x2::sui::SUI>
+        //@ts-ignore-next-line
+        const pool = postLpResponse.objectChanges?.find(change => change.type === "created" && change.objectType == poolType)?.objectId;
+        console.log("poolId", pool)
+        await prisma.coin.update({
+            where: {
+                bondingCurveId: bonding_curve_id
+            },
+            data: {
+                poolId: pool
+            }
+        })
+
+        // const getTheLiquidity = new TransactionBlock()
+        //
+        //
+        // const txb2 = new TransactionBlock()
+        // txb2.moveCall({
+        //     target: `${config.managementPackageId}::manager_contract::add_initial_liquidity`,
+        //     arguments: [
+        //         txb2.object(config.managementAdminCapId),
+        //         txb2.object(bonding_curve_id),
+        //         txb2.object(pool),
+        //     ],
+        //     typeArguments: [
+        //         `${coin.packageId}::${coin.module}::${coin.module.toUpperCase()}`,
+        //     ],
+        // });
+        //
+        // const deliciousLiquidity = await client.signAndExecuteTransactionBlock({
+        //     signer: keypair,
+        //     transactionBlock: txb2,
+        //     options: {
+        //         showBalanceChanges: true,
+        //         showEffects: true,
+        //         showEvents: true,
+        //         showInput: true,
+        //         showObjectChanges: true,
+        //     },
+        // });
+        // console.log("deliciousLiquidity", deliciousLiquidity)
+
+    }
 
 }
 const startListener = async () => {

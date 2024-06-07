@@ -6,8 +6,7 @@ export enum EventType {
 }
 
 export enum CoinStatus {
-    STARTING_UP = 0,
-    ACTIVE = 1,
-    CLOSE_PENDING = 2,
-    CLOSED = 3,
+    ACTIVE = 0,
+    CLOSE_PENDING = 1,
+    CLOSED = 2,
 }

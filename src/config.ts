@@ -18,6 +18,9 @@ type AppConfig = {
     managementConfigId: string,
     managementModuleName: string,
     managementAdminCapId: string,
+    kriyaPackageId: string,
+    kriyaProtocolConfigsId: string,
+    suiCoinMetadataId: string,
     keypair: Ed25519Keypair
 }
 // hack to serialize to json
@@ -48,7 +51,10 @@ const {
     MANAGER_CONTRACT_PACKAGE_ID,
     MANAGER_CONTRACT_CONFIG_ID,
     MANAGER_CONTRACT_MODULE_NAME,
-    MANAGER_CONTRACT_ADMIN_CAP_ID
+    MANAGER_CONTRACT_ADMIN_CAP_ID,
+    KRIYA_PROTOCOL_CONFIGS_ID,
+    KRIYA_PACKAGE_ID,
+    SUI_COIN_METADATA_ID
 } = process.env;
 
 if (!MANAGER_CONTRACT_PACKAGE_ID) {
@@ -67,6 +73,17 @@ if (!MANAGER_CONTRACT_ADMIN_CAP_ID) {
     throw new Error("MANAGER_CONTRACT_ADMIN_CAP_ID envvar is required");
 }
 
+if (!KRIYA_PROTOCOL_CONFIGS_ID) {
+    throw new Error("KRIYA_PROTOCOL_CONFIGS_ID envvar is required");
+}
+
+if (!SUI_COIN_METADATA_ID) {
+    throw new Error("SUI_COIN_METADATA_ID envvar is required");
+}
+if (!KRIYA_PACKAGE_ID) {
+    throw new Error("KRIYA_PACKAGE_ID envvar is required");
+}
+
 
 export const config: AppConfig = {
     network,
@@ -77,6 +94,9 @@ export const config: AppConfig = {
     managementConfigId: MANAGER_CONTRACT_CONFIG_ID,
     managementModuleName: MANAGER_CONTRACT_MODULE_NAME,
     managementAdminCapId: MANAGER_CONTRACT_ADMIN_CAP_ID,
+    kriyaPackageId: KRIYA_PACKAGE_ID,
+    kriyaProtocolConfigsId: KRIYA_PROTOCOL_CONFIGS_ID,
+    suiCoinMetadataId: SUI_COIN_METADATA_ID,
     keypair
 }
 console.log("config", config)

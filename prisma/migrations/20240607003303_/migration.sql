@@ -1,16 +1,17 @@
 -- CreateTable
 CREATE TABLE "Coin" (
+    "id" SERIAL NOT NULL,
+    "bondingCurveId" TEXT NOT NULL,
     "packageId" TEXT NOT NULL,
+    "coinMetadataId" TEXT NOT NULL,
     "module" TEXT NOT NULL,
-    "storeId" TEXT NOT NULL,
     "creator" TEXT NOT NULL,
     "decimals" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "symbol" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
     "iconUrl" TEXT NOT NULL DEFAULT '',
-    "coinType" TEXT NOT NULL,
-    "website" TEXT NOT NULL DEFAULT '',
+    "websiteUrl" TEXT NOT NULL DEFAULT '',
     "twitterUrl" TEXT NOT NULL DEFAULT '',
     "discordUrl" TEXT NOT NULL DEFAULT '',
     "telegramUrl" TEXT NOT NULL DEFAULT '',
@@ -23,7 +24,7 @@ CREATE TABLE "Coin" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "signature" TEXT NOT NULL DEFAULT '',
 
-    CONSTRAINT "Coin_pkey" PRIMARY KEY ("packageId")
+    CONSTRAINT "Coin_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -54,8 +55,17 @@ CREATE TABLE "Post" (
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );
 
--- AddForeignKey
-ALTER TABLE "Trade" ADD CONSTRAINT "Trade_coinId_fkey" FOREIGN KEY ("coinId") REFERENCES "Coin"("packageId") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "Coin_bondingCurveId_key" ON "Coin"("bondingCurveId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Coin_packageId_key" ON "Coin"("packageId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Coin_coinMetadataId_key" ON "Coin"("coinMetadataId");
 
 -- AddForeignKey
-ALTER TABLE "Post" ADD CONSTRAINT "Post_coinId_fkey" FOREIGN KEY ("coinId") REFERENCES "Coin"("packageId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Trade" ADD CONSTRAINT "Trade_coinId_fkey" FOREIGN KEY ("coinId") REFERENCES "Coin"("bondingCurveId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Post" ADD CONSTRAINT "Post_coinId_fkey" FOREIGN KEY ("coinId") REFERENCES "Coin"("bondingCurveId") ON DELETE RESTRICT ON UPDATE CASCADE;
