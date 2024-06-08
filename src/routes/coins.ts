@@ -19,7 +19,6 @@ router.get("/coins/top", async (_, res) => {
         }
     });
 
-
     const twentyFourHoursAgo = new Date();
     twentyFourHoursAgo.setDate(twentyFourHoursAgo.getDate() - 1);
 
@@ -111,6 +110,8 @@ const searchCoinsSchema = Joi.object({
     order: Joi.string().valid('asc', 'desc').optional(),
     sort: Joi.string().valid('created', 'marketCap', 'tvl').optional(),
     term: Joi.string().allow('').optional(),
+    offset: Joi.number().optional(),
+    page_size: Joi.number().optional(),
 });
 
 router.get("/coins/search", async (req, res) => {
@@ -122,9 +123,12 @@ router.get("/coins/search", async (req, res) => {
 
     let sortBy = 'createdAt';
     let order: SortOrder = (req.query.order === 'asc' || req.query.order === 'desc') ? req.query.order : 'desc';
+    let pageSize = req.query.page_size ? parseInt(req.query.page_size as string) : 10;
+    let offset : number = req.query.offset ? parseInt(req.query.offset as string) : 0;;
     let sort = req.query.sort;
     let term = req.query.term as string;
     let whereClause = {};
+
     try {
         if (term) {
             whereClause = {
@@ -176,6 +180,8 @@ router.get("/coins/search", async (req, res) => {
             const coinIds = aggregateTradingVolume.map(trade => trade.coinId);
 
             const coins = await prisma.coin.findMany({
+                skip: offset,
+                take: pageSize,
                 where: {
                     bondingCurveId: {
                         in: coinIds,
@@ -193,6 +199,8 @@ router.get("/coins/search", async (req, res) => {
 
         let coins = await prisma.coin.findMany({
             where: whereClause,
+            skip: offset,
+            take: pageSize,
             orderBy: {
                 [sortBy]: order
             }
@@ -224,10 +232,15 @@ router.get("/coins/:id", async (req, res) => {
 
 router.get('/coins/:id/trades', async (req, res) => {
     const {id} = req.params;
+    let offset: number = req.query.offset ? parseInt(req.query.offset as string) : 0;;
+    let limit: number = req.query.limit ? parseInt(req.query.limit as string) : 100;;
+
     try {
         // TODO: apply a limit ?
         const trades = await prisma.trade.findMany({
             where: {coinId: id},
+            skip: offset,
+            take: limit,
             orderBy: {
                 createdAt: "desc"
             }
